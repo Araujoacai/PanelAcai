@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão Online com IA - Açaí</title>
+    <title>Sistema de Gestão Online - Açaí</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,8 +23,6 @@
         ::-webkit-scrollbar-track { background: #111827; }
         ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
-        .modal-backdrop { background-color: rgba(0, 0, 0, 0.7); }
-        .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
         .spinner { border-top-color: #4f46e5; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .nav-tab { transition: all 0.2s ease-in-out; }
@@ -34,12 +32,13 @@
         .loader-container {
             position: fixed;
             inset: 0;
-            background-color: rgba(17, 24, 39, 0.9);
+            background-color: rgba(17, 24, 39, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 100;
         }
+        #main-app { display: none; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -48,17 +47,17 @@
     <div id="initial-loader" class="loader-container">
         <div class="flex flex-col items-center">
             <div class="spinner w-16 h-16 rounded-full border-4 border-gray-600 border-t-indigo-500 mb-4"></div>
-            <p class="text-xl text-gray-300">Conectando ao banco de dados...</p>
+            <p class="text-xl text-gray-300">Conectando...</p>
         </div>
     </div>
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
+    <!-- Aplicação Principal -->
+    <div id="main-app" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
         <!-- Cabeçalho -->
         <header class="mb-6 flex items-center justify-between">
             <h1 class="text-3xl sm:text-4xl font-bold text-white">
                 Painel Açaí <span class="text-indigo-400 text-2xl">Online</span>
             </h1>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-400"><path d="M12 2A7 7 0 0 0 5 9c0 4.32 5.55 11.43 6.44 12.53a.5.5 0 0 0 .12.07.5.5 0 0 0 .38 0 .5.5 0 0 0 .12-.07C13.45 20.43 19 13.32 19 9a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/><path d="M12 2A7 7 0 0 0 5 9c0 .26.02.51.05.76.36-1.6 1.74-2.76 3.45-2.76s3.09 1.16 3.45 2.76A6.97 6.97 0 0 0 12 9a7 7 0 0 0-7 7c0 .26.02.51.05.76.36-1.6 1.74-2.76 3.45-2.76s3.09 1.16 3.45 2.76A6.97 6.97 0 0 0 12 16a7 7 0 0 0 7-7c0-.26-.02-.51-.05-.76-.36 1.6-1.74 2.76-3.45 2.76s-3.09-1.16-3.45-2.76A6.97 6.97 0 0 0 12 9z"/></svg>
         </header>
 
         <!-- Navegação em Abas -->
@@ -72,22 +71,19 @@
 
         <!-- Conteúdo da Página de Vendas -->
         <div id="page-sales" class="page-content">
-            <!-- Seção de Registro de Venda -->
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-8">
-                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold text-indigo-300">Registrar Nova Venda</h2>
-                </div>
+                 <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Registrar Nova Venda</h2>
                 <form id="sale-form" class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
                     <div class="sm:col-span-6">
                         <label for="product-select" class="block text-sm font-medium text-gray-400 mb-1">Produto</label>
-                        <select id="product-select" name="product" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></select>
+                        <select id="product-select" name="product" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500"></select>
                     </div>
                     <div class="sm:col-span-3">
                         <label for="quantity-input" class="block text-sm font-medium text-gray-400 mb-1">Quantidade</label>
-                        <input type="number" id="quantity-input" name="quantity" value="1" min="1" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <input type="number" id="quantity-input" name="quantity" value="1" min="1" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="sm:col-span-3">
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 5v14m-7-7h14"/></svg>
                             Adicionar
                         </button>
@@ -95,27 +91,6 @@
                 </form>
             </div>
             
-            <!-- Funcionalidades com Gemini API -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-4 text-indigo-300">Análise Inteligente</h2>
-                    <p class="text-gray-400 mb-4">A IA analisa suas vendas e custos para gerar um relatório financeiro completo com insights sobre sua lucratividade.</p>
-                    <button id="analyze-sales-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">
-                        Analisar Vendas e Lucro ✨
-                    </button>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-4 text-indigo-300">Criador de Produtos por IA</h2>
-                    <p class="text-gray-400 mb-2">Descreva os ingredientes e deixe a IA criar um nome e preço para um novo produto.</p>
-                    <input type="text" id="product-description-input" placeholder="Ex: açaí com creme de pistache, morango e amêndoas" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 mb-3 focus:ring-2 focus:ring-indigo-500">
-                    <button id="generate-product-btn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">
-                        Gerar Produto ✨
-                    </button>
-                    <div id="generated-product-result" class="mt-4 hidden"></div>
-                </div>
-            </div>
-
-            <!-- Resumo das Vendas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex items-center">
                      <div class="bg-green-500/20 p-4 rounded-full mr-4">
@@ -137,11 +112,10 @@
                 </div>
             </div>
 
-            <!-- Histórico de Vendas -->
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-semibold text-indigo-300">Histórico de Vendas</h2>
-                    <button id="clear-history-btn" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                    <button id="clear-history-btn" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-3 rounded-lg flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                         Limpar Histórico
                     </button>
@@ -167,7 +141,6 @@
         <!-- Conteúdo da Página de Custos -->
         <div id="page-costs" class="page-content">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                <!-- Formulário para Adicionar/Editar Ingredientes -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-800 p-6 rounded-xl shadow-lg sticky top-8">
                         <h2 id="ingredient-form-title" class="text-2xl font-semibold mb-4 text-indigo-300">Adicionar Ingrediente</h2>
@@ -202,8 +175,6 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Tabela de Ingredientes -->
                 <div class="lg:col-span-3">
                     <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Base de Custos</h2>
@@ -228,7 +199,6 @@
         <!-- Conteúdo da Página de Receitas -->
         <div id="page-recipes" class="page-content">
              <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                <!-- Formulário de Produto/Receita -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-800 p-6 rounded-xl shadow-lg sticky top-8">
                         <h2 id="product-form-title" class="text-2xl font-semibold mb-4 text-indigo-300">Adicionar Produto</h2>
@@ -243,7 +213,6 @@
                                 <input type="number" id="product-price" step="0.01" required placeholder="18.00" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500">
                             </div>
                             
-                            <!-- Construtor de Receita -->
                             <div class="space-y-2 pt-4">
                                 <h3 class="text-lg font-semibold text-gray-300">Ficha Técnica (Receita)</h3>
                                 <div id="current-recipe-list" class="space-y-2 max-h-48 overflow-y-auto pr-2"></div>
@@ -267,12 +236,10 @@
                         </form>
                     </div>
                 </div>
-                <!-- Lista de Produtos/Receitas -->
                 <div class="lg:col-span-3">
                     <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
                          <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Produtos e Receitas</h2>
                          <div id="recipes-list-container" class="space-y-4">
-                             <!-- Produtos e receitas serão renderizados aqui -->
                          </div>
                          <p id="no-recipes-message" class="text-center py-8 text-gray-500">Nenhum produto cadastrado.</p>
                     </div>
@@ -281,52 +248,35 @@
         </div>
     </div>
 
-    <!-- Modal para Análise do Gemini -->
-    <div id="analysis-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div id="modal-content" class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 transform scale-95 opacity-0 modal">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modal-title" class="text-2xl font-bold text-indigo-300">Análise Financeira por IA ✨</h3>
-                <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
-            </div>
-            <div id="analysis-result" class="prose prose-invert prose-p:text-gray-300 prose-headings:text-indigo-400 prose-strong:text-white max-w-none"></div>
-        </div>
-    </div>
-
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURAÇÃO E ESTADO INICIAL ---
-        firebase: const firebaseConfig = {
-
-  apiKey: "AIzaSyDgj32aaWYpky8L5cJn5Xy-wOs5nNMi_QA",
-
-  authDomain: "panelacai.firebaseapp.com",
-
-  projectId: "panelacai",
-
-  storageBucket: "panelacai.firebasestorage.app",
-
-  messagingSenderId: "778623656475",
-
-  appId: "1:778623656475:web:a50c9f66fb518180ec8ebe"
-
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgj32aaWYpky8L5cJn5Xy-wOs5nNMi_QA",
+            authDomain: "panelacai.firebaseapp.com",
+            projectId: "panelacai",
+            storageBucket: "panelacai.firebasestorage.app",
+            messagingSenderId: "778623656475",
+            appId: "1:778623656475:web:a50c9f66fb518180ec8ebe"
+        };
         
         let sales = [];
         let ingredients = [];
         let products = [];
         let currentRecipe = [];
         
-        let db;
+        let db, auth, userId;
+        let salesUnsubscribe, ingredientsUnsubscribe, productsUnsubscribe;
 
         // --- ELEMENTOS DO DOM ---
         const initialLoader = document.getElementById('initial-loader');
+        const mainApp = document.getElementById('main-app');
         const pageElements = { sales: document.getElementById('page-sales'), costs: document.getElementById('page-costs'), recipes: document.getElementById('page-recipes') };
         const navTabs = document.querySelectorAll('.nav-tab');
-        // Vendas
         const saleForm = document.getElementById('sale-form');
         const productSelect = document.getElementById('product-select');
         const quantityInput = document.getElementById('quantity-input');
@@ -335,7 +285,6 @@
         const totalItemsEl = document.getElementById('total-items');
         const noSalesMessage = document.getElementById('no-sales-message');
         const clearHistoryBtn = document.getElementById('clear-history-btn');
-        // Custos
         const ingredientForm = document.getElementById('ingredient-form');
         const ingredientFormTitle = document.getElementById('ingredient-form-title');
         const ingredientIdInput = document.getElementById('ingredient-id');
@@ -346,7 +295,6 @@
         const ingredientsTableBody = document.getElementById('ingredients-table-body');
         const noIngredientsMessage = document.getElementById('no-ingredients-message');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        // Produtos/Receitas
         const productForm = document.getElementById('product-form');
         const productFormTitle = document.getElementById('product-form-title');
         const productIdInput = document.getElementById('product-id');
@@ -355,21 +303,10 @@
         const cancelProductEditBtn = document.getElementById('cancel-product-edit-btn');
         const recipesListContainer = document.getElementById('recipes-list-container');
         const noRecipesMessage = document.getElementById('no-recipes-message');
-        // Construtor de Receita
         const currentRecipeList = document.getElementById('current-recipe-list');
         const recipeIngredientSelect = document.getElementById('recipe-ingredient-select');
         const recipeQuantityInput = document.getElementById('recipe-quantity-input');
         const addRecipeItemBtn = document.getElementById('add-recipe-item-btn');
-        // IA
-        const analyzeSalesBtn = document.getElementById('analyze-sales-btn');
-        const analysisModal = document.getElementById('analysis-modal');
-        const modalContent = document.getElementById('modal-content');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const modalTitle = document.getElementById('modal-title');
-        const analysisResult = document.getElementById('analysis-result');
-        const generateProductBtn = document.getElementById('generate-product-btn');
-        const productDescriptionInput = document.getElementById('product-description-input');
-        const generatedProductResult = document.getElementById('generated-product-result');
 
         // --- FUNÇÕES DE NAVEGAÇÃO E UTILIDADES ---
         function switchPage(pageName) {
@@ -388,20 +325,26 @@
 
         // --- LÓGICA DE BANCO DE DADOS (FIRESTORE) ---
         function setupRealtimeListeners() {
-            onSnapshot(collection(db, "sales"), (snapshot) => {
+            if (!userId) return;
+
+            const salesCol = collection(db, 'users', userId, 'sales');
+            const ingredientsCol = collection(db, 'users', userId, 'ingredients');
+            const productsCol = collection(db, 'users', userId, 'products');
+
+            salesUnsubscribe = onSnapshot(salesCol, (snapshot) => {
                 sales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 sales.sort((a, b) => b.timestamp - a.timestamp);
                 renderSales();
                 updateSummary();
             });
 
-            onSnapshot(collection(db, "ingredients"), (snapshot) => {
+            ingredientsUnsubscribe = onSnapshot(ingredientsCol, (snapshot) => {
                 ingredients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderIngredients();
                 populateRecipeIngredientSelect();
             });
 
-            onSnapshot(collection(db, "products"), (snapshot) => {
+            productsUnsubscribe = onSnapshot(productsCol, (snapshot) => {
                 products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 populateProducts();
                 renderRecipesList();
@@ -435,17 +378,11 @@
         async function handleIngredientFormSubmit(e) {
             e.preventDefault();
             const id = ingredientIdInput.value;
-            const ingredientData = {
-                name: ingredientNameInput.value,
-                price: parseFloat(ingredientPriceInput.value),
-                quantity: parseFloat(ingredientQuantityInput.value),
-                unit: ingredientUnitInput.value
-            };
-            
+            const ingredientData = { name: ingredientNameInput.value, price: parseFloat(ingredientPriceInput.value), quantity: parseFloat(ingredientQuantityInput.value), unit: ingredientUnitInput.value };
             if (id) {
-                await updateDoc(doc(db, "ingredients", id), ingredientData);
+                await updateDoc(doc(db, "users", userId, "ingredients", id), ingredientData);
             } else {
-                await addDoc(collection(db, "ingredients"), ingredientData);
+                await addDoc(collection(db, "users", userId, "ingredients"), ingredientData);
             }
             resetIngredientForm();
         }
@@ -463,7 +400,7 @@
 
         async function deleteIngredient(id) {
             if (confirm("Tem certeza que deseja excluir este ingrediente?")) {
-                await deleteDoc(doc(db, "ingredients", id));
+                await deleteDoc(doc(db, "users", userId, "ingredients", id));
             }
         }
 
@@ -498,21 +435,13 @@
         function renderRecipesList() {
             recipesListContainer.innerHTML = '';
             noRecipesMessage.style.display = products.length === 0 ? 'block' : 'none';
-
             products.forEach(product => {
                 const productCost = calculateProductCost(product);
                 const profit = product.price - productCost;
                 const margin = product.price > 0 ? (profit / product.price) * 100 : 0;
-
                 const recipeHTML = (product.recipe && product.recipe.length > 0)
-                    ? product.recipe.map(item => `
-                        <div class="flex justify-between text-sm">
-                            <span>${item.ingredientName}</span>
-                            <span class="text-gray-400">${item.quantity} ${ingredients.find(i=>i.name===item.ingredientName)?.unit || ''}</span>
-                        </div>
-                    `).join('')
+                    ? product.recipe.map(item => `<div class="flex justify-between text-sm"><span>${item.ingredientName}</span><span class="text-gray-400">${item.quantity} ${ingredients.find(i=>i.name===item.ingredientName)?.unit || ''}</span></div>`).join('')
                     : '<p class="text-sm text-gray-500">Nenhuma receita cadastrada.</p>';
-
                 const card = document.createElement('div');
                 card.className = 'bg-gray-700/50 p-4 rounded-lg';
                 card.innerHTML = `
@@ -527,14 +456,11 @@
                         </div>
                     </div>
                     <div class="my-3 border-t border-gray-600"></div>
-                    <div class="space-y-1">
-                        ${recipeHTML}
-                    </div>
+                    <div class="space-y-1">${recipeHTML}</div>
                     <div class="mt-3 pt-3 border-t border-gray-600 text-xs flex justify-between">
                         <span class="font-semibold">Custo: ${formatCurrency(productCost)}</span>
                         <span class="font-semibold text-green-400">Lucro: ${formatCurrency(profit)} (${margin.toFixed(1)}%)</span>
-                    </div>
-                `;
+                    </div>`;
                 recipesListContainer.appendChild(card);
             });
         }
@@ -554,11 +480,7 @@
             currentRecipe.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex justify-between items-center bg-gray-700 p-2 rounded';
-                div.innerHTML = `
-                    <span>${item.ingredientName}</span>
-                    <span>${item.quantity} ${ingredients.find(i=>i.name===item.ingredientName)?.unit || ''}</span>
-                    <button type="button" class="remove-recipe-item-btn text-red-500" data-index="${index}">&times;</button>
-                `;
+                div.innerHTML = `<span>${item.ingredientName}</span><span>${item.quantity} ${ingredients.find(i=>i.name===item.ingredientName)?.unit || ''}</span><button type="button" class="remove-recipe-item-btn text-red-500" data-index="${index}">&times;</button>`;
                 currentRecipeList.appendChild(div);
             });
         }
@@ -577,22 +499,17 @@
         async function handleProductFormSubmit(e) {
             e.preventDefault();
             const id = productIdInput.value;
-            const productData = {
-                name: productNameInput.value,
-                price: parseFloat(productPriceInput.value),
-                recipe: currentRecipe
-            };
-
+            const productData = { name: productNameInput.value, price: parseFloat(productPriceInput.value), recipe: currentRecipe };
             if (id) {
-                await updateDoc(doc(db, "products", id), productData);
+                await updateDoc(doc(db, "users", userId, "products", id), productData);
             } else {
-                await addDoc(collection(db, "products"), productData);
+                await addDoc(collection(db, "users", userId, "products"), productData);
             }
             resetProductForm();
         }
 
         function editProduct(id) {
-            switchPage('recipes'); // Leva para a página de receitas para editar
+            switchPage('recipes');
             const product = products.find(p => p.id === id);
             productFormTitle.textContent = "Editar Produto";
             productIdInput.value = product.id;
@@ -606,7 +523,7 @@
 
         async function deleteProduct(id) {
             if (confirm("Tem certeza que deseja excluir este produto?")) {
-                await deleteDoc(doc(db, "products", id));
+                await deleteDoc(doc(db, "users", userId, "products", id));
                 resetProductForm();
             }
         }
@@ -616,7 +533,7 @@
             productIdInput.value = '';
             currentRecipe = [];
             renderCurrentRecipe();
-            productFormTitle.textContent = "Adicionar Novo Produto";
+            productFormTitle.textContent = "Adicionar Produto";
             cancelProductEditBtn.classList.add('hidden');
         }
 
@@ -660,124 +577,21 @@
                 totalCost: calculateProductCost(product) * quantity,
                 timestamp: new Date()
             };
-            await addDoc(collection(db, "sales"), newSale);
+            await addDoc(collection(db, "users", userId, "sales"), newSale);
             saleForm.reset();
             quantityInput.value = '1';
         }
         
         async function deleteSale(id) {
-            await deleteDoc(doc(db, "sales", id));
+            await deleteDoc(doc(db, "users", userId, "sales", id));
         }
 
         async function clearHistory() {
-            if (confirm('Tem certeza que deseja apagar TODO o histórico de vendas? Esta ação não pode ser desfeita.')) {
-                const salesSnapshot = await getDocs(collection(db, "sales"));
+            if (confirm("Tem certeza que deseja apagar TODO o histórico de vendas? Esta ação não pode ser desfeita.")) {
+                const salesSnapshot = await getDocs(collection(db, "users", userId, "sales"));
                 salesSnapshot.forEach(async (doc) => {
                     await deleteDoc(doc.ref);
                 });
-            }
-        }
-
-        // --- FUNÇÕES DA IA (GEMINI) ---
-        function showModal(title, content) {
-            modalTitle.innerText = title;
-            analysisResult.innerHTML = content;
-            analysisModal.classList.remove('hidden');
-            setTimeout(() => modalContent.classList.remove('scale-95', 'opacity-0'), 10);
-        }
-        function hideModal() {
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => analysisModal.classList.add('hidden'), 300);
-        }
-        async function callGemini(prompt, isJson = false) {
-            const apiKey = "AIzaSyCipFL2vguUxwVopZ75LK34y1JJ22x2tJw";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            let payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            if (isJson) { payload.generationConfig = { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { productName: { type: "STRING" }, suggestedPrice: { type: "NUMBER" } }, required: ["productName", "suggestedPrice"] } }; }
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
-                const result = await response.json();
-                if (result.candidates?.[0]?.content?.parts?.[0]?.text) { return result.candidates[0].content.parts[0].text; }
-                throw new Error("Resposta da API inválida.");
-            } catch (error) {
-                console.error("Erro ao chamar a API Gemini:", error);
-                return null;
-            }
-        }
-        async function handleAnalyzeSales() {
-            if (sales.length === 0) { alert("Não há vendas para analisar."); return; }
-            const loadingHTML = `<div class="flex flex-col items-center justify-center p-8"><div class="spinner w-12 h-12 rounded-full border-4 border-gray-600 border-t-indigo-500 mb-4"></div><p class="text-lg text-gray-400">A IA está processando os dados...</p></div>`;
-            showModal("Análise Financeira por IA ✨", loadingHTML);
-            const salesDataForPrompt = sales.map(s => `- ${s.quantity}x ${s.productName}: Receita ${formatCurrency(s.totalPrice)}, Custo ${formatCurrency(s.totalCost)}, Lucro ${formatCurrency(s.totalPrice - s.totalCost)}`).join('\n');
-            const totalRevenue = sales.reduce((sum, s) => sum + s.totalPrice, 0);
-            const totalCost = sales.reduce((sum, s) => sum + s.totalCost, 0);
-            const grossProfit = totalRevenue - totalCost;
-            const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
-            const prompt = `Você é um assistente especialista em análise de dados para uma loja de açaí. Analise os seguintes dados de vendas e custos de hoje e forneça um relatório financeiro amigável e útil em português do Brasil, formatado em markdown. **Dados Consolidados:** - Receita Total: ${formatCurrency(totalRevenue)} - Custo Total de Mercadorias (CMV): ${formatCurrency(totalCost)} - Lucro Bruto Total: ${formatCurrency(grossProfit)} - Margem de Lucro Bruta: ${grossMargin.toFixed(2)}% **Detalhes das Vendas:** ${salesDataForPrompt} **Sua análise deve incluir os seguintes pontos:** 1. **Diagnóstico Financeiro:** Um parágrafo curto sobre a saúde financeira do dia, comentando sobre a margem de lucro. 2. **Produto Mais Lucrativo:** Identifique o produto com a maior margem de lucro percentual. 3. **Produto Menos Lucrativo:** Identifique o produto com a menor margem de lucro e sugira uma ação (ex: "renegociar ingrediente X", "ajustar o preço de venda em Y%", ou "revisar a receita para reduzir o custo em Z"). 4. **Campeão de Vendas (Receita):** Qual produto gerou mais receita total. 5. **Sugestão Estratégica:** Com base na lucratividade e volume, sugira uma promoção inteligente. Exemplo: "Crie um combo com seu produto mais lucrativo (X) e um de menor venda (Y) para aumentar o giro."`;
-            const analysis = await callGemini(prompt);
-            if (analysis) {
-                let htmlAnalysis = analysis.replace(/### (.*)/g, '<h3 class="text-xl font-semibold text-indigo-300 mt-4 mb-2">$1</h3>').replace(/## (.*)/g, '<h2 class="text-2xl font-bold text-indigo-200 mt-5 mb-3">$1</h2>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>').replace(/\n/g, '<br>');
-                analysisResult.innerHTML = htmlAnalysis;
-            } else {
-                analysisResult.innerHTML = "<p class='text-red-400'>Ocorreu um erro ao analisar os dados. Tente novamente.</p>";
-            }
-        }
-        
-        async function handleGenerateProduct() {
-            const description = productDescriptionInput.value.trim();
-            if (!description) {
-                alert("Por favor, descreva os ingredientes do novo produto.");
-                return;
-            }
-
-            const button = generateProductBtn;
-            const originalText = button.innerHTML;
-            button.disabled = true;
-            button.innerHTML = `<div class="spinner w-5 h-5 border-2 border-white/50 border-t-white rounded-full mr-2"></div> Gerando...`;
-
-            const prompt = `
-                Crie um nome de produto criativo e um preço de venda sugerido para uma tigela de açaí com os seguintes ingredientes: "${description}".
-                O nome deve ser curto, atraente e em português. O preço deve ser um número razoável para um produto premium, em BRL.
-                Retorne apenas o JSON.
-            `;
-            
-            const resultJsonString = await callGemini(prompt, true);
-            
-            button.disabled = false;
-            button.innerHTML = originalText;
-
-            if(resultJsonString) {
-                try {
-                    const result = JSON.parse(resultJsonString);
-                    generatedProductResult.innerHTML = `
-                        <div class="bg-gray-700 p-4 rounded-lg">
-                            <p class="text-gray-300">Sugestão da IA:</p>
-                            <p class="text-xl font-bold text-white">"${result.productName}"</p>
-                            <p class="text-lg text-amber-400">Preço Sugerido: ${formatCurrency(result.suggestedPrice)}</p>
-                            <button id="add-new-product-btn" class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
-                                Adicionar ao Cardápio
-                            </button>
-                        </div>
-                    `;
-                    generatedProductResult.classList.remove('hidden');
-                    
-                    document.getElementById('add-new-product-btn').addEventListener('click', async () => {
-                        const newProduct = { name: result.productName, price: result.suggestedPrice, recipe: [] }; // Inicia com receita vazia
-                        await addDoc(collection(db, "products"), newProduct);
-                        generatedProductResult.classList.add('hidden');
-                        productDescriptionInput.value = '';
-                        alert(`Produto "${result.productName}" adicionado! Edite-o na aba "Receitas" para adicionar a ficha técnica.`);
-                        switchPage('recipes');
-                    });
-
-                } catch (e) {
-                     generatedProductResult.innerHTML = `<p class="text-red-400">Erro ao processar a sugestão da IA.</p>`;
-                     generatedProductResult.classList.remove('hidden');
-                }
-            } else {
-                 generatedProductResult.innerHTML = `<p class="text-red-400">Não foi possível gerar um produto. Tente novamente.</p>`;
-                 generatedProductResult.classList.remove('hidden');
             }
         }
 
@@ -786,10 +600,29 @@
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
-                const auth = getAuth(app);
-                await signInAnonymously(auth);
-                setupRealtimeListeners();
-                initialLoader.style.display = 'none';
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        mainApp.style.display = 'block';
+                        initialLoader.style.display = 'none';
+                        setupRealtimeListeners();
+                    } else {
+                        // Se não houver usuário, tenta o login anônimo
+                        try {
+                            const userCredential = await signInAnonymously(auth);
+                            userId = userCredential.user.uid;
+                            mainApp.style.display = 'block';
+                            initialLoader.style.display = 'none';
+                            setupRealtimeListeners();
+                        } catch (error) {
+                            console.error("Erro no login anônimo:", error);
+                            initialLoader.innerHTML = "<p class='text-red-400'>Erro de conexão. Recarregue a página.</p>";
+                        }
+                    }
+                });
+
             } catch (error) {
                 console.error("Erro na inicialização do Firebase:", error);
                 initialLoader.innerHTML = "<p class='text-red-400'>Erro de conexão. Verifique a configuração do Firebase e recarregue a página.</p>";
@@ -797,13 +630,10 @@
 
             switchPage('sales');
 
-            // Eventos de Navegação
             navTabs.forEach(tab => tab.addEventListener('click', () => switchPage(tab.dataset.page)));
-            // Eventos de Vendas
             saleForm.addEventListener('submit', addSale);
             salesTableBody.addEventListener('click', (e) => { if (e.target.closest('.delete-btn')) { deleteSale(e.target.closest('.delete-btn').dataset.id); } });
             clearHistoryBtn.addEventListener('click', clearHistory);
-            // Eventos de Custos
             ingredientForm.addEventListener('submit', handleIngredientFormSubmit);
             ingredientsTableBody.addEventListener('click', (e) => {
                 const editBtn = e.target.closest('.edit-ingredient-btn');
@@ -812,7 +642,6 @@
                 if (deleteBtn) deleteIngredient(deleteBtn.dataset.id);
             });
             cancelEditBtn.addEventListener('click', resetIngredientForm);
-            // Eventos de Produtos/Receitas
             productForm.addEventListener('submit', handleProductFormSubmit);
             recipesListContainer.addEventListener('click', (e) => {
                 const editBtn = e.target.closest('.edit-product-btn');
@@ -828,11 +657,7 @@
                     renderCurrentRecipe();
                 }
             });
-            // Eventos da IA
-            analyzeSalesBtn.addEventListener('click', handleAnalyzeSales);
-            generateProductBtn.addEventListener('click', handleGenerateProduct);
-            closeModalBtn.addEventListener('click', hideModal);
-            analysisModal.addEventListener('click', (e) => { if (e.target === analysisModal) hideModal(); });
+            closeMessageModalBtn.addEventListener('click', hideMessage);
         }
 
         main();
