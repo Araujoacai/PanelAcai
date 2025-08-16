@@ -66,6 +66,7 @@
                 <button class="nav-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 hover:text-white hover:border-gray-500" data-page="sales">Vendas</button>
                 <button class="nav-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 hover:text-white hover:border-gray-500" data-page="costs">Custos</button>
                 <button class="nav-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 hover:text-white hover:border-gray-500" data-page="recipes">Receitas</button>
+                <button class="nav-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 hover:text-white hover:border-gray-500" data-page="reports">Relatórios</button>
             </nav>
         </div>
 
@@ -249,6 +250,72 @@
                 </div>
             </div>
         </div>
+
+        <!-- Conteúdo da Página de Relatórios -->
+        <div id="page-reports" class="page-content">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-8">
+                <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Relatório de Vendas</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label for="start-date" class="block text-sm font-medium text-gray-400 mb-1">Data Início</label>
+                        <input type="date" id="start-date" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="end-date" class="block text-sm font-medium text-gray-400 mb-1">Data Fim</label>
+                        <input type="date" id="end-date" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="lg:col-span-2 flex space-x-2">
+                        <button id="filter-report-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                            Filtrar
+                        </button>
+                        <button id="download-csv-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Baixar CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="report-summary" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8" style="display: none;">
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex items-center">
+                     <div class="bg-green-500/20 p-4 rounded-full mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-lg">Receita no Período</h3>
+                        <p id="report-total-revenue" class="text-3xl font-bold text-white">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex items-center">
+                    <div class="bg-purple-500/20 p-4 rounded-full mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="m12 12 4 10 4-10"/><path d="M16 12h4"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-lg">Itens no Período</h3>
+                        <p id="report-total-items" class="text-3xl font-bold text-white">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Vendas Filtradas</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="border-b border-gray-700">
+                            <tr>
+                                <th class="p-3 text-sm font-semibold text-gray-400">Produto</th>
+                                <th class="p-3 text-sm font-semibold text-gray-400 text-center">Qtd.</th>
+                                <th class="p-3 text-sm font-semibold text-gray-400 text-right">Preço Total</th>
+                                <th class="p-3 text-sm font-semibold text-gray-400">Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body"></tbody>
+                    </table>
+                     <p id="no-report-message" class="text-center py-8 text-gray-500">Selecione um período e clique em "Filtrar" para ver os resultados.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -271,6 +338,7 @@
         let ingredients = [];
         let products = [];
         let currentRecipe = [];
+        let filteredSales = [];
         
         let db, auth, userId;
         let salesUnsubscribe, ingredientsUnsubscribe, productsUnsubscribe;
@@ -278,8 +346,14 @@
         // --- ELEMENTOS DO DOM ---
         const initialLoader = document.getElementById('initial-loader');
         const mainApp = document.getElementById('main-app');
-        const pageElements = { sales: document.getElementById('page-sales'), costs: document.getElementById('page-costs'), recipes: document.getElementById('page-recipes') };
+        const pageElements = { 
+            sales: document.getElementById('page-sales'), 
+            costs: document.getElementById('page-costs'), 
+            recipes: document.getElementById('page-recipes'),
+            reports: document.getElementById('page-reports') 
+        };
         const navTabs = document.querySelectorAll('.nav-tab');
+        // Vendas
         const saleForm = document.getElementById('sale-form');
         const productSelect = document.getElementById('product-select');
         const quantityInput = document.getElementById('quantity-input');
@@ -288,6 +362,7 @@
         const totalItemsEl = document.getElementById('total-items');
         const noSalesMessage = document.getElementById('no-sales-message');
         const clearHistoryBtn = document.getElementById('clear-history-btn');
+        // Custos
         const ingredientForm = document.getElementById('ingredient-form');
         const ingredientFormTitle = document.getElementById('ingredient-form-title');
         const ingredientIdInput = document.getElementById('ingredient-id');
@@ -298,6 +373,7 @@
         const ingredientsTableBody = document.getElementById('ingredients-table-body');
         const noIngredientsMessage = document.getElementById('no-ingredients-message');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        // Receitas
         const productForm = document.getElementById('product-form');
         const productFormTitle = document.getElementById('product-form-title');
         const productIdInput = document.getElementById('product-id');
@@ -311,6 +387,16 @@
         const recipeQuantityInput = document.getElementById('recipe-quantity-input');
         const addRecipeItemBtn = document.getElementById('add-recipe-item-btn');
         const currentRecipeTotalWeight = document.getElementById('current-recipe-total-weight');
+        // Relatórios
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const filterReportBtn = document.getElementById('filter-report-btn');
+        const downloadCsvBtn = document.getElementById('download-csv-btn');
+        const reportTableBody = document.getElementById('report-table-body');
+        const noReportMessage = document.getElementById('no-report-message');
+        const reportSummary = document.getElementById('report-summary');
+        const reportTotalRevenueEl = document.getElementById('report-total-revenue');
+        const reportTotalItemsEl = document.getElementById('report-total-items');
 
         // --- FUNÇÕES DE NAVEGAÇÃO E UTILIDADES ---
         function switchPage(pageName) {
@@ -337,7 +423,7 @@
 
             salesUnsubscribe = onSnapshot(salesCol, (snapshot) => {
                 sales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                sales.sort((a, b) => b.timestamp - a.timestamp);
+                sales.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
                 renderSales();
                 updateSummary();
             });
@@ -346,7 +432,6 @@
                 ingredients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderIngredients();
                 populateRecipeIngredientSelect();
-                // Re-render recipes when ingredients change to update units
                 renderRecipesList();
             });
 
@@ -603,7 +688,6 @@
             const quantity = parseInt(quantityInput.value, 10);
             const product = products.find(p => p.name === productName);
             if (!product || quantity <= 0) { 
-                // Simple feedback without alert
                 const btn = event.target.querySelector('button[type="submit"]');
                 const originalText = btn.textContent;
                 btn.textContent = 'Inválido!';
@@ -640,6 +724,86 @@
                 });
                 await Promise.all(deletePromises);
             }
+        }
+
+        // --- LÓGICA DE RELATÓRIOS ---
+        function filterAndRenderReport() {
+            const startDate = startDateInput.valueAsDate;
+            const endDate = endDateInput.valueAsDate;
+
+            if (!startDate || !endDate) {
+                alert("Por favor, selecione a data de início e de fim.");
+                return;
+            }
+
+            // Adjust end date to include the whole day
+            endDate.setHours(23, 59, 59, 999);
+
+            filteredSales = sales.filter(sale => {
+                const saleDate = sale.timestamp.toDate();
+                return saleDate >= startDate && saleDate <= endDate;
+            });
+
+            renderReportTable();
+            updateReportSummary();
+        }
+
+        function renderReportTable() {
+            reportTableBody.innerHTML = '';
+            noReportMessage.style.display = filteredSales.length === 0 ? 'block' : 'none';
+            reportSummary.style.display = filteredSales.length > 0 ? 'grid' : 'none';
+
+            filteredSales.forEach(sale => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700';
+                row.innerHTML = `
+                    <td class="p-3 font-medium">${sale.productName}</td>
+                    <td class="p-3 text-center">${sale.quantity}</td>
+                    <td class="p-3 text-right font-bold">${formatCurrency(sale.totalPrice)}</td>
+                    <td class="p-3 text-sm text-gray-400">${formatDate(sale.timestamp)}</td>
+                `;
+                reportTableBody.appendChild(row);
+            });
+        }
+
+        function updateReportSummary() {
+            const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.totalPrice, 0);
+            const totalItems = filteredSales.reduce((sum, sale) => sum + sale.quantity, 0);
+            reportTotalRevenueEl.textContent = formatCurrency(totalRevenue);
+            reportTotalItemsEl.textContent = totalItems;
+        }
+
+        function downloadCSV() {
+            if (filteredSales.length === 0) {
+                alert("Não há dados para exportar. Filtre um período com vendas primeiro.");
+                return;
+            }
+
+            const headers = ["Produto", "Quantidade", "Preco Total", "Data"];
+            const csvRows = [headers.join(",")];
+
+            for (const sale of filteredSales) {
+                const values = [
+                    sale.productName,
+                    sale.quantity,
+                    sale.totalPrice.toFixed(2),
+                    formatDate(sale.timestamp)
+                ];
+                csvRows.push(values.join(","));
+            }
+
+            const csvString = csvRows.join("\n");
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            const startDateStr = startDateInput.value;
+            const endDateStr = endDateInput.value;
+            link.setAttribute("download", `relatorio_vendas_${startDateStr}_a_${endDateStr}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // --- INICIALIZAÇÃO E EVENTOS ---
@@ -704,6 +868,8 @@
                     renderCurrentRecipe();
                 }
             });
+            filterReportBtn.addEventListener('click', filterAndRenderReport);
+            downloadCsvBtn.addEventListener('click', downloadCSV);
         }
 
         main();
