@@ -146,7 +146,6 @@ function renderMenu() {
     inicializarPedido(); // Inicia o pedido com 1 copo
 }
 
-// NOVA FUNÇÃO: Renderiza os cards de resumo para cada copo
 function renderizarResumoPedido() {
     const container = document.getElementById('resumo-pedido-container');
     if (!container) return;
@@ -154,24 +153,37 @@ function renderizarResumoPedido() {
 
     pedidoAtual.forEach((copo, index) => {
         const isAtivo = index === copoAtualIndex;
-        const activeClass = isAtivo ? 'border-purple-600 ring-2 ring-purple-300' : 'border-gray-200';
-        const acompanhamentosHTML = copo.acompanhamentos.map(a => `<li>- ${a.name} (x${a.quantity})</li>`).join('');
-        
+        const activeClass = isAtivo 
+            ? 'border-2 border-purple-600 bg-purple-50 shadow-md' 
+            : 'border border-gray-300 bg-white hover:bg-gray-50';
+
+        const acompanhamentosHTML = copo.acompanhamentos.map(a => 
+            `<li class="text-xs">- ${a.name} (x${a.quantity})</li>`
+        ).join('');
+
+        const precoCopo = copo.preco ? `R$${copo.preco.toFixed(2).replace(".", ",")}` : "—";
+
         const cardHTML = `
-            <div onclick="window.selecionarCopoParaEdicao(${index})" class="border ${activeClass} p-3 rounded-lg cursor-pointer transition-all bg-white shadow-sm">
-                <div class="flex justify-between items-center font-bold">
-                    <span class="text-purple-800">Copo ${index + 1}</span>
-                    <span class="text-gray-800">${copo.tamanho || 'Selecione o tamanho'}</span>
+            <div class="p-3 rounded-xl cursor-pointer transition-all ${activeClass}">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-purple-800 font-bold">🥤 Copo ${index + 1}</span>
+                    <span class="text-sm text-gray-700">${copo.tamanho || 'Sem tamanho'}</span>
                 </div>
-                <ul class="text-sm text-gray-600 mt-2 pl-1">
+                <ul class="text-sm text-gray-600">
                     ${copo.acompanhamentos.length > 0 ? acompanhamentosHTML : '<li class="text-gray-400">Nenhum acompanhamento</li>'}
                 </ul>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="font-semibold text-green-700">💰 ${precoCopo}</span>
+                    <button onclick="window.selecionarCopoParaEdicao(${index})"
+                        class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded-lg shadow">
+                        Editar
+                    </button>
+                </div>
             </div>
         `;
         container.innerHTML += cardHTML;
     });
 }
-
 // NOVA FUNÇÃO: Atualiza a quantidade de copos no pedido
 function atualizarQuantidadeCopos() {
     const novaQuantidade = parseInt(document.getElementById('quantidade').value) || 1;
