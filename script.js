@@ -1,6 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, where, orderBy, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { 
+    getFirestore, collection, onSnapshot, addDoc, serverTimestamp, 
+    query, where, orderBy, getDocs 
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCKZ-9QMY5ziW7uJIano6stDzHDKm8KqnE",
@@ -15,29 +18,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let produtos = [];
-let combos = [];
-let precosBase = {};
+let pedidoAtual = [];
+let copoAtualIndex = 0;
 let unsubscribeVendas;
-let unsubscribeFluxoCaixa;
-let storeSettings = {};
-let isStoreOpen = true;
-let initialVendasLoadComplete = false;
 
-// --- NOVA ESTRUTURA PARA GERENCIAR O PEDIDO ---
-let pedidoAtual = []; // Array para guardar os objetos de cada copo
-let copoAtualIndex = 0; // Índice do copo que está sendo editado
-
-const menuContainer = document.getElementById('menu-container');
-const adminPanel = document.getElementById('admin-panel');
-const whatsappBar = document.getElementById('whatsapp-bar');
-const adminLoginBtn = document.getElementById('admin-login-button');
-const adminLogoutBtn = document.getElementById('admin-logout-button');
-const modalContainer = document.getElementById('modal-container');
-const sendOrderBtnMobile = document.getElementById('send-order-button-mobile');
-const sendOrderBtnDesktop = document.getElementById('send-order-button-desktop');
-
-// Função para inicializar o pedido com um copo
+// --- Inicializa pedido ---
 function inicializarPedido() {
     pedidoAtual = [{
         tamanho: null,
@@ -48,36 +33,55 @@ function inicializarPedido() {
     }];
     copoAtualIndex = 0;
     document.getElementById('quantidade').value = 1;
-    atualizarFormularioParaCopoAtual();
     renderizarResumoPedido();
     calcularValor();
 }
 
-function showModal(content, onOpen = () => {}) {
-    let modalContent = content;
-    if (typeof content === 'string') {
-        modalContent = `<p class="text-lg text-gray-800 mb-6">${content}</p><button onclick="window.closeModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-8 rounded-lg transition-colors">OK</button>`;
+// --- Salvar pedido no Firestore ---
+async function salvarPedido(nomeCliente, telefoneCliente, status = "pendente") {
+    try {
+        let total = pedidoAtual.reduce((sum, copo) => sum + (copo.preco || 0), 0);
+
+        const pedido = {
+            orderId: gerarOrderId(),
+            nomeCliente,
+            telefoneCliente,
+            itens: pedidoAtual.map(copo => ({
+                tamanho: copo.tamanho || "N/A",
+                acompanhamentos: copo.acompanhamentos?.map(a => ({
+                    name: a.name,
+                    quantity: a.quantity
+                })) || [],
+                apenasAcai: !!copo.apenasAcai,
+                observacoes: copo.observacoes || "",
+                preco: copo.preco || 0
+            })),
+            total: `R$${total.toFixed(2).replace('.', ',')}`,
+            status,
+            timestamp: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "vendas"), pedido);
+        console.log("Pedido salvo:", pedido.orderId);
+
+        inicializarPedido();
+        showModal("Pedido enviado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao salvar pedido:", error);
+        showModal("Erro ao salvar pedido, tente novamente.");
     }
-    modalContainer.innerHTML = `<div class="bg-white rounded-2xl p-6 w-full max-w-md text-center shadow-xl transform transition-all scale-95 opacity-0" id="modal-box">${modalContent}</div>`;
-    modalContainer.classList.remove('hidden');
-    setTimeout(() => { document.getElementById('modal-box').classList.remove('scale-95', 'opacity-0'); onOpen(); }, 10);
 }
 
-function closeModal() {
-    const modalBox = document.getElementById('modal-box');
-    if (modalBox) {
-        modalBox.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => { modalContainer.classList.add('hidden'); modalContainer.innerHTML = ''; }, 200);
-    }
+// --- Gera ID do pedido ---
+function gerarOrderId() {
+    const data = new Date();
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    return `${dia}${mes}-${Math.floor(Math.random() * 1000)}`;
 }
 
-// ...
-// (mesmo conteúdo anterior das funções principais de pedido e cálculo)
-// ...
-
-// 🔹 Atualização do relatório de vendas Admin
+// --- Relatório Admin ---
 function carregarVendasAdmin(startDate, endDate) {
-    initialVendasLoadComplete = false;
     const tableBody = document.getElementById('vendas-table-body');
     let q = query(collection(db, "vendas"), orderBy("timestamp", "desc"));
 
@@ -85,7 +89,12 @@ function carregarVendasAdmin(startDate, endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
-        q = query(collection(db, "vendas"), where("timestamp", ">=", start), where("timestamp", "<=", end), orderBy("timestamp", "desc"));
+        q = query(
+            collection(db, "vendas"),
+            where("timestamp", ">=", start),
+            where("timestamp", "<=", end),
+            orderBy("timestamp", "desc")
+        );
     }
 
     if (unsubscribeVendas) unsubscribeVendas();
@@ -96,6 +105,7 @@ function carregarVendasAdmin(startDate, endDate) {
 
         snapshot.docs.forEach(docSnap => {
             const venda = { id: docSnap.id, ...docSnap.data() };
+
             const valorNumerico = parseFloat(venda.total.replace('R$', '').replace(',', '.'));
             if (!isNaN(valorNumerico)) totalVendas += valorNumerico;
 
@@ -105,17 +115,19 @@ function carregarVendasAdmin(startDate, endDate) {
             let pedidoHTML = '';
             if (venda.itens && Array.isArray(venda.itens)) {
                 pedidoHTML = venda.itens.map((item, index) => {
-                    const acompText = (item.acompanhamentos || []).map(a => `${a.name}(x${a.quantity})`).join(', ');
+                    const acompText = (item.acompanhamentos || [])
+                        .map(a => `${a.name}(x${a.quantity})`)
+                        .join(', ');
 
                     let resumoAcomp = "";
-                    if (item.acompanhamentos && item.acompanhamentos.length > 0) {
+                    if (item.acompanhamentos?.length > 0) {
                         const totalPorcoes = item.acompanhamentos.reduce((sum, a) => sum + (a.quantity || 0), 0);
                         if (item.apenasAcai) {
                             resumoAcomp = `${totalPorcoes} extras`;
                         } else {
                             const inclusos = Math.min(totalPorcoes, 3);
                             const extras = Math.max(totalPorcoes - 3, 0);
-                            resumoAcomp = `${inclusos} inclusos` + (extras > 0 ? ` + ${extras} extra(s)` : "");
+                            resumoAcomp = `${inclusos} inclusos${extras > 0 ? ` + ${extras} extra(s)` : ""}`;
                         }
                     } else {
                         resumoAcomp = item.apenasAcai ? "Somente Açaí" : "Nenhum acompanhamento";
@@ -149,22 +161,26 @@ function carregarVendasAdmin(startDate, endDate) {
     });
 }
 
-// 🔹 Exportar relatório CSV
+// --- Exportar CSV ---
 function exportarCSV(vendas) {
-    let csvContent = "OrderID;Cliente;Telefone;Data;Copo;Resumo;Valor\n";
+    let csvContent = "OrderID;Cliente;Telefone;Data;Copo;Acompanhamentos;Resumo;Valor\n";
 
     vendas.forEach(venda => {
         if (venda.itens) {
             venda.itens.forEach((item, index) => {
+                const acompText = (item.acompanhamentos || [])
+                    .map(a => `${a.name}(x${a.quantity})`)
+                    .join(', ');
+
                 let resumoAcomp = "";
-                if (item.acompanhamentos && item.acompanhamentos.length > 0) {
+                if (item.acompanhamentos?.length > 0) {
                     const totalPorcoes = item.acompanhamentos.reduce((sum, a) => sum + (a.quantity || 0), 0);
                     if (item.apenasAcai) {
                         resumoAcomp = `${totalPorcoes} extras`;
                     } else {
                         const inclusos = Math.min(totalPorcoes, 3);
                         const extras = Math.max(totalPorcoes - 3, 0);
-                        resumoAcomp = `${inclusos} inclusos` + (extras > 0 ? ` + ${extras} extra(s)` : "");
+                        resumoAcomp = `${inclusos} inclusos${extras > 0 ? ` + ${extras} extra(s)` : ""}`;
                     }
                 } else {
                     resumoAcomp = item.apenasAcai ? "Somente Açaí" : "Nenhum acompanhamento";
@@ -172,7 +188,8 @@ function exportarCSV(vendas) {
 
                 const precoCopo = item.preco ? `R$${item.preco.toFixed(2).replace(".", ",")}` : "—";
                 const data = venda.timestamp ? new Date(venda.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
-                csvContent += `${venda.orderId};${venda.nomeCliente};${venda.telefoneCliente};${data};Copo ${index + 1} (${item.tamanho});${resumoAcomp};${precoCopo}\n`;
+
+                csvContent += `${venda.orderId};${venda.nomeCliente};${venda.telefoneCliente};${data};Copo ${index + 1} (${item.tamanho});${acompText || resumoAcomp};${resumoAcomp};${precoCopo}\n`;
             });
         }
     });
@@ -184,7 +201,7 @@ function exportarCSV(vendas) {
     link.click();
 }
 
-// 🔹 Exportar relatório PDF
+// --- Exportar PDF ---
 async function exportarPDF(vendas) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -200,22 +217,30 @@ async function exportarPDF(vendas) {
 
         if (venda.itens) {
             venda.itens.forEach((item, index) => {
+                const acompText = (item.acompanhamentos || [])
+                    .map(a => `${a.name}(x${a.quantity})`)
+                    .join(', ');
+
                 let resumoAcomp = "";
-                if (item.acompanhamentos && item.acompanhamentos.length > 0) {
+                if (item.acompanhamentos?.length > 0) {
                     const totalPorcoes = item.acompanhamentos.reduce((sum, a) => sum + (a.quantity || 0), 0);
                     if (item.apenasAcai) {
                         resumoAcomp = `${totalPorcoes} extras`;
                     } else {
                         const inclusos = Math.min(totalPorcoes, 3);
                         const extras = Math.max(totalPorcoes - 3, 0);
-                        resumoAcomp = `${inclusos} inclusos` + (extras > 0 ? ` + ${extras} extra(s)` : "");
+                        resumoAcomp = `${inclusos} inclusos${extras > 0 ? ` + ${extras} extra(s)` : ""}`;
                     }
                 } else {
                     resumoAcomp = item.apenasAcai ? "Somente Açaí" : "Nenhum acompanhamento";
                 }
 
                 const precoCopo = item.preco ? `R$${item.preco.toFixed(2).replace(".", ",")}` : "—";
-                doc.text(`Copo ${index + 1} (${item.tamanho}) - ${resumoAcomp} - ${precoCopo}`, 15, y);
+                doc.text(
+                    `Copo ${index + 1} (${item.tamanho}) - ${acompText || resumoAcomp} | Resumo: ${resumoAcomp} | Valor: ${precoCopo}`,
+                    15,
+                    y
+                );
                 y += 6;
             });
         }
@@ -229,3 +254,16 @@ async function exportarPDF(vendas) {
 
     doc.save("relatorio_vendas.pdf");
 }
+
+// --- Listeners dos botões de exportação ---
+document.getElementById("btn-export-csv")?.addEventListener("click", async () => {
+    const vendasSnapshot = await getDocs(collection(db, "vendas"));
+    const vendas = vendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    exportarCSV(vendas);
+});
+
+document.getElementById("btn-export-pdf")?.addEventListener("click", async () => {
+    const vendasSnapshot = await getDocs(collection(db, "vendas"));
+    const vendas = vendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    exportarPDF(vendas);
+});
