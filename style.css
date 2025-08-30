@@ -1,38 +1,58 @@
-body {
-  scroll-behavior: smooth;
-}
-
-input[type=checkbox], input[type=radio] {
-  width: 1.4em;
-  height: 1.4em;
-}
-
-.card-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  margin-right: 8px;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.tab-active {
-  border-color: #9333ea;
-  background-color: #f3e8ff;
-  color: #9333ea;
-}
-
+body { scroll-behavior: smooth; }
+input[type=checkbox], input[type=radio] { width: 1.4em; height: 1.4em; }
+.card-img { width: 24px; height: 24px; object-fit: contain; margin-right: 8px; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.tab-active { border-color: #9333ea; background-color: #f3e8ff; color: #9333ea; }
 @keyframes slide-down {
   from { top: -100px; opacity: 0; }
   to { top: 20px; opacity: 1; }
 }
+.toast-notification { animation: slide-down 0.5s ease-out forwards; }
 
-.toast-notification {
-  animation: slide-down 0.5s ease-out forwards;
+/* ---------------- TEMAS ---------------- */
+
+/* Tema Padrão (Roxo/Rosa) */
+.theme-default {
+  --primary: #9333ea;
+  --secondary: #ec4899;
+  --background: linear-gradient(to bottom, #f0fdf4, #ede9fe);
+}
+
+/* Tema Azul/Cinza */
+.theme-blue {
+  --primary: #2563eb;
+  --secondary: #475569;
+  --background: linear-gradient(to bottom, #e0f2fe, #f1f5f9);
+}
+
+/* Tema Verde/Laranja */
+.theme-green {
+  --primary: #16a34a;
+  --secondary: #f97316;
+  --background: linear-gradient(to bottom, #dcfce7, #ffedd5);
+}
+
+/* Tema Escuro */
+.theme-dark {
+  --primary: #0ea5e9;
+  --secondary: #a855f7;
+  --background: linear-gradient(to bottom, #0f172a, #1e293b);
+  color: #e2e8f0;
+}
+
+/* Aplicando variáveis */
+body {
+  background: var(--background);
+  color: var(--text, #1f2937);
+}
+button, .btn {
+  background-color: var(--primary);
+  color: white;
+}
+h1, h2, h3, h4, h5 {
+  color: var(--primary);
+}
+a {
+  color: var(--secondary);
 }
