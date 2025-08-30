@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio Açaí</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gradient-to-b from-emerald-100 to-violet-200 text-gray-800 font-sans p-4">
+
+  <button id="admin-login-button" class="fixed bottom-20 right-4 bg-purple-700 text-white p-3 rounded-full shadow-lg z-40 hover:bg-purple-800 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
+  </button>
+  <button id="admin-logout-button" class="fixed bottom-20 right-4 bg-red-500 text-white p-3 rounded-full shadow-lg z-40 hover:bg-red-600 transition hidden">
+     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/><path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
+  </button>
+  
+  <div id="toast-container" class="fixed top-5 right-5 z-50"></div>
+
+  <div id="menu-container" class="bg-white/95 shadow-2xl rounded-3xl p-6 w-full max-w-md lg:max-w-6xl mb-24 lg:mb-4 backdrop-blur-sm border border-purple-200">
+
+    <div class="flex justify-center mb-6">
+      <img src="Logoacai.png" alt="Logo Açaí Araujo" class="w-41 h-auto mx-auto">
+    </div>
+    
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-purple-800 mb-3">🍧 Monte seu Pedido</h1>
+        <p class="font-bold text-pink-600 tracking-wide">ACOMPANHAMENTOS</p>
+        <p id="acompanhamentos-rules" class="text-gray-700">3 porções por copo | Adicional R$3 por porção extra</p>
+    </div>
+    
+    <div id="loja-fechada-aviso" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6" role="alert">
+        <p class="font-bold">Loja Fechada</p>
+        <p id="mensagem-loja-fechada"></p>
+    </div>
+
+    <div id="combos-section" class="mb-8 hidden">
+        <h2 class="text-2xl font-bold text-center text-purple-800 mb-4">🔥 Combos Imperdíveis</h2>
+        <div id="combos-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+        <div id="cup-builder">
+            <input type="hidden" id="editing-cup-index">
+            <h2 class="text-2xl font-bold text-purple-800 mb-4" id="builder-title">Monte seu 1º Copo</h2>
+            <div class="mb-6"><h3 class="text-lg font-semibold text-purple-700 mb-2">🥤 Escolha o tamanho</h3><div id="tamanhos-container" class="flex flex-col sm:flex-row sm:flex-wrap gap-3"><p class="text-gray-500">A carregar tamanhos...</p></div></div>
+            <div class="mb-4 bg-purple-50 p-3 rounded-lg">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="apenas-acai-check" class="w-5 h-5 accent-purple-600 flex-shrink-0">
+                    <span class="ml-3 font-semibold text-purple-700">Somente Açaí no copo</span>
+                </label>
+            </div>
+            <div class="mb-4"><h3 class="text-md font-semibold text-purple-600 mt-4 mb-2">🥭 Frutas</h3><div id="frutas-container" class="grid grid-cols-2 gap-3"><p class="text-gray-500 col-span-2">A carregar frutas...</p></div></div>
+            <div class="mb-4"><h3 class="text-md font-semibold text-purple-600 mt-4 mb-2">🍫 Cremes</h3><div id="cremes-container" class="grid grid-cols-1 gap-2"><p class="text-gray-500">A carregar cremes...</p></div></div>
+            <div class="mb-6"><h3 class="text-md font-semibold text-purple-600 mt-4 mb-2">✨ Outros</h3><div id="outros-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2"><p class="text-gray-500 col-span-2">A carregar outros itens...</p></div></div>
+            <div class="mb-6"><h3 class="text-lg font-semibold text-purple-700 mb-2">📝 Observações (deste copo)</h3><textarea id="observacoes" rows="3" placeholder="Ex: pouco leite condensado..." class="w-full p-3 border-2 border-purple-300 rounded-xl focus:ring-2 focus:ring-pink-400"></textarea></div>
+            <div class="bg-gray-100 p-4 rounded-xl flex items-center justify-between">
+                <span class="text-xl font-bold">Valor do Copo: <span id="valor-copo">R$0,00</span></span>
+                <button id="add-cup-button" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition">Adicionar ao Pedido</button>
+                <button id="update-cup-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition hidden">Atualizar Copo</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="bg-violet-50 p-6 rounded-2xl sticky top-4">
+                <h2 class="text-2xl font-bold text-purple-800 mb-4">Seu Pedido</h2>
+                <div id="order-summary-container" class="mb-6 space-y-3 max-h-80 overflow-y-auto pr-2">
+                    <p class="text-gray-500">Seu pedido está vazio. Monte um copo ao lado e clique em "Adicionar ao Pedido".</p>
+                </div>
+                <div class="mb-4"><h3 class="text-lg font-semibold text-purple-700 mb-2">👤 Seu Nome</h3><input type="text" id="nome-cliente" placeholder="Digite seu nome completo" class="w-full p-3 border-2 border-purple-300 rounded-xl focus:ring-2 focus:ring-pink-400"></div>
+                <div class="mb-6"><h3 class="text-lg font-semibold text-purple-700 mb-2">📞 Telefone/WhatsApp</h3><input type="tel" id="telefone-cliente" placeholder="Seu número para contato" class="w-full p-3 border-2 border-purple-300 rounded-xl focus:ring-2 focus:ring-pink-400"></div>
+                 <div id="desktop-action-bar" class="hidden lg:flex items-center justify-end mt-8 pt-6 border-t">
+                    <h2 class="text-2xl font-bold mr-6">💰 Total: <span id="valor-desktop">R$0,00</span></h2>
+                    <button id="send-order-button-desktop" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition text-lg disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>📲 Enviar Pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <div id="admin-panel" class="hidden w-full max-w-6xl mx-auto p-4"></div>
+
+  <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4"></div>
+
+  <div id="whatsapp-bar" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-700 text-white shadow-xl p-4 flex items-center justify-between max-w-md mx-auto rounded-t-3xl lg:hidden">
+    <h2 class="text-lg font-bold">💰 Total: <span id="valor-mobile">R$0,00</span></h2>
+    <button id="send-order-button-mobile" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-5 rounded-xl shadow-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>📲 WhatsApp</button>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
