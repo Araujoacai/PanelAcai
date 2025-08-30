@@ -1,7 +1,9 @@
+// ====================== IMPORTS FIREBASE ======================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, where, orderBy, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+// ====================== CONFIG FIREBASE ======================
 const firebaseConfig = {
   apiKey: "AIzaSyCKZ-9QMY5ziW7uJIano6stDzHDKm8KqnE",
   authDomain: "salvapropagandas.firebaseapp.com",
@@ -15,6 +17,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// ====================== VARIÁVEIS GLOBAIS ======================
 let produtos = [];
 let combos = [];
 let precosBase = {};
@@ -24,9 +27,10 @@ let storeSettings = {};
 let isStoreOpen = true;
 let initialVendasLoadComplete = false;
 
-// Copos
+// Copos independentes
 let coposSelecionados = [];
 
+// Referências DOM
 const menuContainer = document.getElementById('menu-container');
 const adminPanel = document.getElementById('admin-panel');
 const whatsappBar = document.getElementById('whatsapp-bar');
@@ -36,25 +40,39 @@ const modalContainer = document.getElementById('modal-container');
 const sendOrderBtnMobile = document.getElementById('send-order-button-mobile');
 const sendOrderBtnDesktop = document.getElementById('send-order-button-desktop');
 
+// ====================== MODAL ======================
 function showModal(content, onOpen = () => {}) {
   let modalContent = content;
   if (typeof content === 'string') {
-    modalContent = `<p class="text-lg text-gray-800 mb-6">${content}</p><button onclick="window.closeModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-8 rounded-lg transition-colors">OK</button>`;
+    modalContent = `
+      <p class="text-lg text-gray-800 mb-6">${content}</p>
+      <button onclick="window.closeModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-8 rounded-lg transition-colors">OK</button>
+    `;
   }
-  modalContainer.innerHTML = `<div class="bg-white rounded-2xl p-6 w-full max-w-md text-center shadow-xl transform transition-all scale-95 opacity-0" id="modal-box">${modalContent}</div>`;
+  modalContainer.innerHTML = `
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md text-center shadow-xl transform transition-all scale-95 opacity-0" id="modal-box">
+      ${modalContent}
+    </div>
+  `;
   modalContainer.classList.remove('hidden');
-  setTimeout(() => { document.getElementById('modal-box').classList.remove('scale-95', 'opacity-0'); onOpen(); }, 10);
+  setTimeout(() => {
+    document.getElementById('modal-box').classList.remove('scale-95', 'opacity-0');
+    onOpen();
+  }, 10);
 }
 function closeModal() {
   const modalBox = document.getElementById('modal-box');
   if (modalBox) {
     modalBox.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => { modalContainer.classList.add('hidden'); modalContainer.innerHTML = ''; }, 200);
+    setTimeout(() => {
+      modalContainer.classList.add('hidden');
+      modalContainer.innerHTML = '';
+    }, 200);
   }
 }
 window.closeModal = closeModal;
 
-// 🔑 Login Admin
+// ====================== LOGIN ADMIN ======================
 onAuthStateChanged(auth, user => {
   if (user) {
     adminLoginBtn.classList.add('hidden');
@@ -74,8 +92,15 @@ onAuthStateChanged(auth, user => {
     initialVendasLoadComplete = false;
   }
 });
+
 adminLoginBtn.addEventListener('click', () => {
-  const loginFormHTML = `<h3 class="text-xl font-bold mb-4">Login Admin</h3><input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded mb-2"><input type="password" id="password" placeholder="Senha" class="w-full p-2 border rounded mb-4"><button id="login-submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg">Entrar</button><button onclick="window.closeModal()" class="bg-gray-300 px-4 py-2 rounded-lg ml-2">Cancelar</button>`;
+  const loginFormHTML = `
+    <h3 class="text-xl font-bold mb-4">Login Admin</h3>
+    <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded mb-2">
+    <input type="password" id="password" placeholder="Senha" class="w-full p-2 border rounded mb-4">
+    <button id="login-submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg">Entrar</button>
+    <button onclick="window.closeModal()" class="bg-gray-300 px-4 py-2 rounded-lg ml-2">Cancelar</button>
+  `;
   showModal(loginFormHTML, () => {
     document.getElementById('login-submit').addEventListener('click', async () => {
       try {
@@ -90,10 +115,7 @@ adminLoginBtn.addEventListener('click', () => {
 });
 adminLogoutBtn.addEventListener('click', () => signOut(auth));
 
-/* ===================================================
-   NOVO SISTEMA DE COPOS
-=================================================== */
-
+// ====================== SISTEMA DE COPOS ======================
 function renderCoposSelecionados() {
   const container = document.getElementById("copos-container");
   container.innerHTML = "";
@@ -218,11 +240,7 @@ async function enviarPedido() {
 sendOrderBtnMobile.addEventListener('click', enviarPedido);
 sendOrderBtnDesktop.addEventListener('click', enviarPedido);
 
-/* ===================================================
-   RESTANTE DO SCRIPT (admin, combos, relatório, etc.)
-   >>> AQUI mantém igual ao seu original, só altere renderVendasAdmin:
-=================================================== */
-
+// ====================== RELATÓRIO ADMIN ======================
 function renderVendasAdmin() {
   document.getElementById('content-vendas').innerHTML = `
     <div class="bg-white p-6 rounded-2xl shadow-lg">
@@ -258,4 +276,12 @@ function carregarVendasAdmin() {
         </tr>`;
     });
   });
+}
+
+// ====================== ADMIN PAINEL ======================
+function renderAdminPanel() {
+  adminPanel.innerHTML = `
+    <div id="content-vendas"></div>
+  `;
+  renderVendasAdmin();
 }
