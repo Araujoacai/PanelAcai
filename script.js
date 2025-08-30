@@ -346,3 +346,34 @@ if (themeSelect) {
     localStorage.setItem('selectedTheme', themeSelect.value);
   });
 }
+
+// --- Firestore Listeners --- //
+
+// Produtos
+onSnapshot(collection(db, "produtos"), (snapshot) => {
+  produtos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderMenu();
+  calcularValor(); // mantém valores atualizados
+});
+
+// Combos
+onSnapshot(collection(db, "combos"), (snapshot) => {
+  combos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderCombosMenu();
+});
+
+// Configurações da Loja
+onSnapshot(doc(db, "configuracoes", "geral"), (docSnap) => {
+  if (docSnap.exists()) {
+    storeSettings = docSnap.data();
+    isStoreOpen = storeSettings.aberto;
+    const aviso = document.getElementById("loja-fechada-aviso");
+    const msg = document.getElementById("mensagem-loja-fechada");
+    if (isStoreOpen) {
+      aviso.classList.add("hidden");
+    } else {
+      aviso.classList.remove("hidden");
+      msg.innerText = storeSettings.mensagemFechado || "Estamos fechados no momento.";
+    }
+  }
+});
