@@ -712,65 +712,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function carregarVendasAdmin(startDate, endDate) {
         const tableBody = document.getElementById('vendas-table-body');
-        let q = query(collection(db, "pedidos"), orderBy("timestamp", "desc"));
+        let q;
 
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
             q = query(collection(db, "pedidos"), where("timestamp", ">=", start), where("timestamp", "<=", end), orderBy("timestamp", "desc"));
+        } else {
+            q = collection(db, "pedidos");
         }
         
         if (unsubscribeVendas) unsubscribeVendas();
 
         unsubscribeVendas = onSnapshot(q, (snapshot) => {
-            tableBody.innerHTML = '';
-            let totalVendas = 0;
+            try {
+                tableBody.innerHTML = '';
+                let totalVendas = 0;
 
-            if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Nenhuma venda encontrada para o período.</td></tr>'; }
-            
-            snapshot.docs.forEach(docSnap => {
-                const venda = { id: docSnap.id, ...docSnap.data() };
-                totalVendas += venda.valorTotal || 0;
+                if (snapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Nenhuma venda encontrada para o período.</td></tr>';
+                } else {
+                    snapshot.docs.forEach(docSnap => {
+                        const venda = { id: docSnap.id, ...docSnap.data() };
+                        totalVendas += venda.valorTotal || 0;
 
-                const dataHora = venda.timestamp ? new Date(venda.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
-                const itensFormatados = venda.itens.map(item => {
-                    let itemStr = item.name;
-                    if (item.quantity && item.quantity > 1) itemStr = `${item.quantity}x ${itemStr}`;
-                    if (item.price && item.price > 0) itemStr += ` (R$${item.price.toFixed(2).replace('.', ',')})`;
-                    return itemStr;
-                }).join('<br>');
+                        const dataHora = venda.timestamp && typeof venda.timestamp.seconds === 'number' ? new Date(venda.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
+                        
+                        const itensFormatados = Array.isArray(venda.itens) ? venda.itens.map(item => {
+                            let itemStr = item.name;
+                            if (item.quantity && item.quantity > 1) itemStr = `${item.quantity}x ${itemStr}`;
+                            if (item.price && item.price > 0) itemStr += ` (R$${item.price.toFixed(2).replace('.', ',')})`;
+                            return itemStr;
+                        }).join('<br>') : 'N/A';
 
-                const statusOptions = ['Pendente', 'Em Preparo', 'A Caminho', 'Entregue', 'Cancelado'].map(status => 
-                    `<option value="${status}" ${venda.status === status ? 'selected' : ''}>${status}</option>`
-                ).join('');
+                        const statusOptions = ['Pendente', 'Em Preparo', 'A Caminho', 'Entregue', 'Cancelado'].map(status => 
+                            `<option value="${status}" ${venda.status === status ? 'selected' : ''}>${status}</option>`
+                        ).join('');
 
-                tableBody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3 text-sm">${venda.id.substring(0, 6)}...</td>
-                        <td class="p-3 text-sm">${dataHora}</td>
-                        <td class="p-3">${venda.cliente}</td>
-                        <td class="p-3 text-sm">${itensFormatados}</td>
-                        <td class="p-3 font-semibold">R$${(venda.valorTotal || 0).toFixed(2).replace('.', ',')}</td>
-                        <td class="p-3">
-                            <select class="status-select p-1 border rounded" data-id="${venda.id}">
-                                ${statusOptions}
-                            </select>
-                        </td>
-                        <td class="p-3"><button class="delete-venda-btn bg-red-500 text-white px-2 py-1 rounded text-xs" data-id="${venda.id}">🗑️</button></td>
-                    </tr>`;
-            });
-            document.getElementById('total-vendas').innerText = `R$${totalVendas.toFixed(2).replace('.', ',')}`;
+                        tableBody.innerHTML += `
+                            <tr class="border-b">
+                                <td class="p-3 text-sm">${venda.id.substring(0, 6)}...</td>
+                                <td class="p-3 text-sm">${dataHora}</td>
+                                <td class="p-3">${venda.cliente || 'N/A'}</td>
+                                <td class="p-3 text-sm">${itensFormatados}</td>
+                                <td class="p-3 font-semibold">R$${(venda.valorTotal || 0).toFixed(2).replace('.', ',')}</td>
+                                <td class="p-3">
+                                    <select class="status-select p-1 border rounded" data-id="${venda.id}">
+                                        ${statusOptions}
+                                    </select>
+                                </td>
+                                <td class="p-3"><button class="delete-venda-btn bg-red-500 text-white px-2 py-1 rounded text-xs" data-id="${venda.id}">🗑️</button></td>
+                            </tr>`;
+                    });
+                }
+                document.getElementById('total-vendas').innerText = `R$${totalVendas.toFixed(2).replace('.', ',')}`;
 
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', async (e) => {
-                    const vendaId = e.target.dataset.id;
-                    const newStatus = e.target.value;
-                    try { await updateDoc(doc(db, "pedidos", vendaId), { status: newStatus }); showToast("Status atualizado!", 'success'); }
-                    catch (error) { console.error("Erro ao atualizar status da venda:", error); showToast("Erro ao atualizar status.", 'error'); }
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', async (e) => {
+                        const vendaId = e.target.dataset.id;
+                        const newStatus = e.target.value;
+                        try { await updateDoc(doc(db, "pedidos", vendaId), { status: newStatus }); showToast("Status atualizado!", 'success'); }
+                        catch (error) { console.error("Erro ao atualizar status da venda:", error); showToast("Erro ao atualizar status.", 'error'); }
+                    });
                 });
-            });
-            document.querySelectorAll('.delete-venda-btn').forEach(btn => btn.addEventListener('click', e => deletarVenda(e.currentTarget.dataset.id)));
+                document.querySelectorAll('.delete-venda-btn').forEach(btn => btn.addEventListener('click', e => deletarVenda(e.currentTarget.dataset.id)));
+            } catch (e) {
+                console.error("Erro no processamento do snapshot de vendas:", e);
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Erro ao processar dados de vendas.</td></tr>';
+                showToast("Erro interno ao carregar vendas.", 'error');
+            }
+        }, (error) => {
+            console.error("Erro ao carregar vendas do Firestore:", error);
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Erro ao carregar vendas do banco de dados.</td></tr>';
+            showToast("Erro ao carregar vendas do Firestore.", 'error');
         });
     }
 
