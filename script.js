@@ -77,8 +77,9 @@ adminLoginBtn.addEventListener('click', () => {
 
 adminLogoutBtn.addEventListener('click', () => signOut(auth));
 
-// --- LÓGICA DO MENU E PEDIDO (REVERTIDA) ---
+// --- LÓGICA DO MENU E PEDIDO ---
 
+// CORREÇÃO ESTÁ AQUI: Esta função agora volta a renderizar os acompanhamentos na tela principal.
 function renderMenu() {
     const containers = { tamanho: document.getElementById('tamanhos-container'), fruta: document.getElementById('frutas-container'), creme: document.getElementById('cremes-container'), outro: document.getElementById('outros-container') };
     Object.values(containers).forEach(c => c.innerHTML = ''); // Limpa todos os containers
@@ -162,7 +163,6 @@ adicionarCopoBtn.addEventListener('click', () => {
         return;
     }
 
-    // Calcular preço do copo
     let adicionais = 0;
     const totalPorcoes = acompanhamentosSelecionados.length;
     if (apenasAcai) {
@@ -182,7 +182,7 @@ adicionarCopoBtn.addEventListener('click', () => {
     pedidoAtual.push(novoCopo);
     renderPedido();
     calcularValorTotal();
-    limparSelecaoAcompanhamentos(); // Limpa os checkboxes para o próximo copo
+    limparSelecaoAcompanhamentos();
 });
 
 function removerCopo(cupId) {
@@ -293,10 +293,9 @@ async function enviarPedido() {
 }
 
 window.closeModal = closeModal;
-window.removerCopo = removerCopo; // Mantém a função de remover no escopo global
+window.removerCopo = removerCopo;
 
 // --- Restante do código (Combos, Painel Admin, etc.) ---
-// Esta parte não precisa de alteração e permanece a mesma
 
 function renderCombosMenu() {
     const container = document.getElementById('combos-container');
