@@ -16,13 +16,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let produtos = [];
-let combos = []; // Variável para armazenar os combos
+let combos = [];
 let precosBase = {};
 let unsubscribeVendas;
 let unsubscribeFluxoCaixa;
 let storeSettings = {};
 let isStoreOpen = true; 
 let initialVendasLoadComplete = false;
+let pedidoAtual = []; // Array para gerenciar os copos do pedido
 
 const menuContainer = document.getElementById('menu-container');
 const adminPanel = document.getElementById('admin-panel');
@@ -83,40 +84,21 @@ function renderMenu() {
     const produtosVisiveis = produtos.filter(p => p.category !== 'insumo' && p.isActive !== false);
     if (produtosVisiveis.length === 0) { Object.values(containers).forEach(c => c.innerHTML = '<p class="text-red-500 text-sm col-span-2">Nenhum item. Faça login como admin para adicionar produtos.</p>'); return; }
     
+    // Renderiza apenas os tamanhos, os acompanhamentos agora são no modal
     produtosVisiveis.forEach(p => {
-        const pId = p.name.replace(/[^a-zA-Z0-9]/g, ''); // Create a safe ID
         if (p.category === 'tamanho') {
             precosBase[p.name] = p.price;
             containers.tamanho.innerHTML += `<label class="flex items-center justify-between bg-purple-100 px-4 py-3 rounded-2xl shadow cursor-pointer hover:bg-purple-200 transition"><div><span class="font-medium text-gray-800">${p.name}</span><span class="ml-3 text-sm text-gray-600">R$${p.price.toFixed(2)}</span></div><input type="radio" name="tamanho" value="${p.name}" class="accent-pink-500"></label>`;
-        } else {
-            const bgColor = p.category === 'fruta' ? 'bg-pink-100 hover:bg-pink-200' : p.category === 'creme' ? 'bg-purple-100 hover:bg-purple-200' : 'bg-violet-200 hover:bg-violet-300';
-            const accentColor = p.category === 'fruta' ? 'accent-purple-600' : 'accent-pink-600';
-            if(containers[p.category]) { 
-                containers[p.category].innerHTML += `
-                <label class="flex items-center ${bgColor} px-3 py-2 rounded-xl shadow cursor-pointer">
-                    <img src="${p.iconUrl}" alt="${p.name}" class="card-img flex-shrink-0" onerror="this.style.display='none'">
-                    <input type="checkbox" value="${p.name}" data-qty-target="qty-${pId}" class="acompanhamento-check mx-2 ${accentColor} flex-shrink-0">
-                    <span class="flex-grow truncate">${p.name}</span>
-                    <input type="number" value="1" min="1" id="qty-${pId}" class="acompanhamento-qty w-14 text-center border rounded-md hidden p-1 ml-2 flex-shrink-0">
-                </label>`;
-            }
         }
     });
 
-    document.querySelectorAll('.acompanhamento-check').forEach(check => {
-        check.addEventListener('change', (e) => {
-            const qtyInput = document.getElementById(e.target.dataset.qtyTarget);
-            if (e.target.checked) {
-                qtyInput.classList.remove('hidden');
-                qtyInput.value = 1;
-            } else {
-                qtyInput.classList.add('hidden');
-            }
-            calcularValor();
-        });
-    });
-    document.querySelectorAll('input, textarea').forEach(el => { el.addEventListener("change", calcularValor); el.addEventListener("input", calcularValor); });
-    document.getElementById('apenas-acai-check').addEventListener('change', calcularValor);
+    // Remove a lógica de acompanhamentos da tela principal, pois ela foi movida para o modal.
+    document.getElementById('frutas-container').innerHTML = '<p class="text-gray-500 text-center col-span-full italic">Adicione um copo e clique em "Editar" para escolher os acompanhamentos.</p>';
+    document.getElementById('cremes-container').innerHTML = '';
+    document.getElementById('outros-container').innerHTML = '';
+    
+    // A div inteira dos acompanhamentos da tela principal pode ser escondida se preferir
+    // Ex: document.getElementById('acompanhamentos-principal-div').style.display = 'none';
 }
 
 function renderCombosMenu() {
@@ -147,22 +129,21 @@ function renderCombosMenu() {
     });
 }
 
+// CORRIGIDO: Adicionada a chave de fechamento }
 function calcularValorTotal() {
     const total = pedidoAtual.reduce((sum, cup) => sum + cup.preco, 0);
     const totalText = "R$" + total.toFixed(2).replace(".", ",");
     document.getElementById("valor-mobile").innerText = totalText;
     document.getElementById("valor-desktop").innerText = totalText;
+}
 
 function resetarFormulario() {
-    // Limpa os campos de dados do cliente
     document.getElementById('nome-cliente').value = '';
     document.getElementById('telefone-cliente').value = '';
     document.getElementById('observacoes').value = '';
-    
-    // Limpa o pedido atual
     pedidoAtual = [];
-    renderPedido(); // Limpa a lista de copos na UI
-    calcularValorTotal(); // Zera o total
+    renderPedido();
+    calcularValorTotal();
 }
 
 function handleOrderAction() {
@@ -171,6 +152,7 @@ function handleOrderAction() {
 sendOrderBtnMobile.addEventListener('click', handleOrderAction);
 sendOrderBtnDesktop.addEventListener('click', handleOrderAction);
 
+// CORRIGIDO: Função 'enviarPedido' agora está correta e sem código duplicado
 async function enviarPedido() {
     if (!isStoreOpen) return;
 
@@ -189,12 +171,10 @@ async function enviarPedido() {
     let mensagemCompletaWhatsApp = `*Novo Pedido de ${nomeCliente}*\n*Telefone:* ${telefoneCliente}\n\n`;
     let valorTotalPedido = 0;
 
-    // Itera sobre cada copo no pedido para criar as vendas e a mensagem
     for (const [index, copo] of pedidoAtual.entries()) {
         const valorCopo = `R$${copo.preco.toFixed(2).replace('.', ',')}`;
         valorTotalPedido += copo.preco;
         
-        // --- Lógica para gerar ID e salvar no Firebase (para CADA copo) ---
         const counterRef = doc(db, "configuracoes", "dailyCounter");
         let orderId;
         try {
@@ -219,17 +199,16 @@ async function enviarPedido() {
         } catch (e) {
             console.error("Transaction failed: ", e);
             showModal("Não foi possível gerar o ID do pedido. Tente novamente.");
-            return; // Aborta o envio
+            return;
         }
         
-        // Salva a venda individual no Firestore
         try {
             await addDoc(collection(db, "vendas"), {
                 orderId,
                 nomeCliente,
                 telefoneCliente,
                 tamanho: copo.tamanho,
-                quantidade: 1, // Quantidade é sempre 1 por venda
+                quantidade: 1,
                 acompanhamentos: copo.acompanhamentos,
                 observacoes: observacoesGerais || "Nenhuma",
                 total: valorCopo,
@@ -240,7 +219,6 @@ async function enviarPedido() {
             console.error("Erro ao salvar venda individual: ", e);
         }
 
-        // Monta a parte da mensagem do WhatsApp para este copo
         const acompanhamentosText = copo.acompanhamentos.length > 0
             ? copo.acompanhamentos.map(a => `${a.name} (x${a.quantity})`).join("\n- ")
             : 'Nenhum (Somente Açaí)';
@@ -252,27 +230,10 @@ async function enviarPedido() {
     mensagemCompletaWhatsApp += `📝 *Observações Gerais:* ${observacoesGerais || "Nenhuma"}\n`;
     mensagemCompletaWhatsApp += `💰 *Valor Total do Pedido: R$${valorTotalPedido.toFixed(2).replace('.', ',')}*`;
 
-    // Abre o WhatsApp com a mensagem consolidada
     window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagemCompletaWhatsApp)}`, "_blank");
 
     showModal("Pedido enviado com sucesso! Agradecemos a preferência.");
     resetarFormulario();
-}
-
-    const numero = storeSettings.whatsappNumber || "5514991962607"; // Usa o número das configurações
-    const acompanhamentosText = acompanhamentosSelecionados.map(a => `${a.name} (x${a.quantity})`).join("\n- ");
-    const msg = `*Novo Pedido: ${orderId}*\n\n*Cliente:* ${nomeCliente}\n*Telefone:* ${telefoneCliente}\n\nOlá! Quero pedir ${quantidade} copo(s) de açaí ${tamanhoEl.value}.\n\n*Acompanhamentos:*\n- ${acompanhamentosSelecionados.length > 0 ? acompanhamentosText : 'Nenhum (Somente Açaí)'}\n\n📝 *Observações:* ${observacoes || "Nenhuma"}\n\n💰 *Valor Total: ${valor}*`;
-    
-    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank");
-
-    try { 
-        await addDoc(collection(db, "vendas"), { orderId, nomeCliente, telefoneCliente, tamanho: tamanhoEl.value, quantidade: parseInt(quantidade), acompanhamentos: acompanhamentosSelecionados, observacoes: observacoes || "Nenhuma", total: valor, status: "pendente", timestamp: serverTimestamp() }); 
-        showModal("Pedido enviado com sucesso! Agradecemos a preferência.");
-        resetarFormulario();
-    } catch (e) { 
-        console.error("Erro ao salvar venda: ", e); 
-        showModal("Ocorreu um erro ao salvar seu pedido no nosso sistema, mas você pode enviá-lo pelo WhatsApp."); 
-    }
 }
 
 window.closeModal = closeModal;
@@ -328,12 +289,11 @@ window.pedirCombo = async (comboId) => {
             orderId,
             nomeCliente,
             telefoneCliente,
-            pedidoCombo: combo.name, // Campo para identificar que é um combo
-            observacoes: combo.description || "", // FIX: Fallback to empty string if description is undefined
+            pedidoCombo: combo.name,
+            observacoes: combo.description || "",
             total: valor,
             status: "pendente",
             timestamp: serverTimestamp(),
-            // Campos nulos para compatibilidade com a estrutura de vendas
             tamanho: "",
             quantidade: 1,
             acompanhamentos: []
@@ -363,7 +323,7 @@ function renderAdminPanel() {
         <div id="content-config" class="hidden"></div>
     `;
     renderProdutosAdmin();
-    renderCombosAdmin(); // Nova função
+    renderCombosAdmin();
     renderVendasAdmin();
     renderCaixaAdmin();
     renderConfigAdmin();
@@ -387,7 +347,6 @@ function renderProdutosAdmin() {
     carregarProdutosAdmin();
 }
 
-// ** NOVAS FUNÇÕES PARA GERENCIAR COMBOS **
 function renderCombosAdmin() {
     document.getElementById('content-combos').innerHTML = `
         <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
@@ -491,7 +450,6 @@ async function toggleComboStatus(id) {
         catch (error) { console.error("Erro ao atualizar status:", error); showModal("Não foi possível atualizar o status do combo."); }
     }
 }
-// ** FIM DAS FUNÇÕES DE COMBO **
 
 function renderVendasAdmin() {
     document.getElementById('content-vendas').innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-2xl font-semibold mb-4 text-purple-700">Relatório de Vendas</h3><div class="flex flex-wrap gap-4 items-center mb-4 p-4 border rounded-lg"><label for="start-date">De:</label><input type="date" id="start-date" class="p-2 border rounded"><label for="end-date">Até:</label><input type="date" id="end-date" class="p-2 border rounded"><button id="gerar-relatorio-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Gerar Relatório</button></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-100"><tr><th class="p-3">ID Pedido</th><th class="p-3">Data/Hora</th><th class="p-3">Cliente</th><th class="p-3">Pedido</th><th class="p-3">Financeiro</th><th class="p-3">Status</th><th class="p-3">Ações</th></tr></thead><tbody id="vendas-table-body"></tbody></table></div><div class="mt-4 text-right pr-4"><h4 class="text-xl font-bold text-gray-800">Total das Vendas (Período): <span id="total-vendas" class="text-purple-700">R$0,00</span></h4></div></div>`;
@@ -574,15 +532,15 @@ async function salvarProduto() {
     if (!produto.name || !produto.unit) { showModal("Nome e Unidade são obrigatórios."); return; }
     
     if (produto.category === 'tamanho') {
-        produto.recipe = []; // Default empty recipe for new sizes
+        produto.recipe = [];
     }
 
     try {
         if (id) { 
             const existingProd = produtos.find(p => p.id === id);
             if (existingProd) {
-                produto.recipe = existingProd.recipe || []; // Preserve existing recipe on update
-                produto.isActive = existingProd.isActive; // Preserve active status
+                produto.recipe = existingProd.recipe || [];
+                produto.isActive = existingProd.isActive;
             }
             await updateDoc(doc(db, "produtos", id), produto); 
         } else { 
@@ -657,7 +615,7 @@ function deletarProduto(id) {
 async function toggleProductStatus(id) {
     const product = produtos.find(p => p.id === id);
     if (product) {
-        const newStatus = !(product.isActive !== false); // Handles undefined as true
+        const newStatus = !(product.isActive !== false);
         try {
             await updateDoc(doc(db, "produtos", id), { isActive: newStatus });
         } catch (error) {
@@ -933,7 +891,7 @@ function checkStoreOpen() {
     const msgLojaFechada = document.getElementById('mensagem-loja-fechada');
 
     if (!configDia || !configDia.aberto || !configDia.abertura || !configDia.fechamento) { 
-        isStoreOpen = true; // Assume a loja aberta se não houver configuração
+        isStoreOpen = true;
     } else {
         const [aberturaH, aberturaM] = configDia.abertura.split(':').map(Number);
         const [fechamentoH, fechamentoM] = configDia.fechamento.split(':').map(Number);
@@ -1028,13 +986,13 @@ onSnapshot(doc(db, "configuracoes", "horarios"), (doc) => {
 onSnapshot(collection(db, "produtos"), (snapshot) => {
     produtos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderMenu();
-    calcularValor();
+    // A chamada inicial de calcularValor() foi removida daqui para evitar erros,
+    // pois o valor agora depende do array 'pedidoAtual'
 }, (error) => {
     console.error("Erro ao carregar produtos:", error);
     document.getElementById('menu-container').innerHTML = '<p class="text-red-600 text-center">Não foi possível carregar o cardápio.</p>';
 });
 
-// Listener para os combos
 onSnapshot(collection(db, "combos"), (snapshot) => {
     combos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderCombosMenu();
@@ -1042,11 +1000,9 @@ onSnapshot(collection(db, "combos"), (snapshot) => {
     console.error("Erro ao carregar combos:", error);
     document.getElementById('combos-section').classList.add('hidden');
 });
-// ADICIONE TODO ESTE BLOCO DE CÓDIGO NO FINAL DO SCRIPT.JS
 
 // --- NOVAS FUNÇÕES PARA GERENCIAR PEDIDOS COM MÚLTIPLOS COPOS ---
 
-// Renderiza a lista de copos na interface
 function renderPedido() {
     listaCoposPedido.innerHTML = '';
     if (pedidoAtual.length === 0) {
@@ -1080,7 +1036,6 @@ function renderPedido() {
     });
 }
 
-// Adiciona um novo copo ao pedido
 adicionarCopoBtn.addEventListener('click', () => {
     const tamanhoEl = document.querySelector('input[name="tamanho"]:checked');
     if (!tamanhoEl) {
@@ -1091,7 +1046,7 @@ adicionarCopoBtn.addEventListener('click', () => {
     const precoBase = precosBase[tamanho] || 0;
 
     const novoCopo = {
-        id: Date.now(), // ID único para o copo
+        id: Date.now(),
         tamanho: tamanho,
         acompanhamentos: [],
         preco: precoBase,
@@ -1102,14 +1057,12 @@ adicionarCopoBtn.addEventListener('click', () => {
     calcularValorTotal();
 });
 
-// Remove um copo do pedido
 function removerCopo(cupId) {
     pedidoAtual = pedidoAtual.filter(cup => cup.id !== cupId);
     renderPedido();
     calcularValorTotal();
 }
 
-// Abre o modal para editar os acompanhamentos de um copo específico
 function abrirModalEdicao(cupId) {
     const cup = pedidoAtual.find(c => c.id === cupId);
     if (!cup) return;
@@ -1127,7 +1080,6 @@ function abrirModalEdicao(cupId) {
     const acompanhamentosDisponiveis = produtos.filter(p => ['fruta', 'creme', 'outro'].includes(p.category) && p.isActive !== false);
 
     acompanhamentosDisponiveis.forEach(p => {
-        const pId = `modal-${p.name.replace(/[^a-zA-Z0-9]/g, '')}`;
         const isChecked = cup.acompanhamentos.some(a => a.name === p.name);
         
         const bgColor = p.category === 'fruta' ? 'bg-pink-100 hover:bg-pink-200' : p.category === 'creme' ? 'bg-purple-100 hover:bg-purple-200' : 'bg-violet-200 hover:bg-violet-300';
@@ -1145,12 +1097,10 @@ function abrirModalEdicao(cupId) {
     document.getElementById('modal-acompanhamentos').classList.remove('hidden');
 }
 
-// Fecha o modal de edição
 function fecharModalEdicao() {
     document.getElementById('modal-acompanhamentos').classList.add('hidden');
 }
 
-// Salva as alterações feitas no modal
 function salvarAcompanhamentos() {
     const cupId = parseInt(document.getElementById('cup-id-edit').value);
     const cupIndex = pedidoAtual.findIndex(c => c.id === cupId);
@@ -1158,12 +1108,11 @@ function salvarAcompanhamentos() {
 
     const novosAcompanhamentos = [];
     document.querySelectorAll('.acompanhamento-check-modal:checked').forEach(check => {
-        novosAcompanhamentos.push({ name: check.value, quantity: 1 }); // Simplificando para quantidade 1
+        novosAcompanhamentos.push({ name: check.value, quantity: 1 });
     });
 
     const apenasAcai = document.getElementById('apenas-acai-check-modal').checked;
     
-    // Recalcular preço do copo
     const precoBase = precosBase[pedidoAtual[cupIndex].tamanho] || 0;
     let adicionais = 0;
     const totalPorcoes = novosAcompanhamentos.length;
@@ -1183,11 +1132,7 @@ function salvarAcompanhamentos() {
     calcularValorTotal();
 }
 
-// Expondo funções para o escopo global para que o onclick funcione
 window.removerCopo = removerCopo;
 window.abrirModalEdicao = abrirModalEdicao;
 window.fecharModalEdicao = fecharModalEdicao;
 window.salvarAcompanhamentos = salvarAcompanhamentos;
-
-
-// --- FIM DAS NOVAS FUNÇÕES ---
