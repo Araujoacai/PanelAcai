@@ -1,0 +1,4 @@
+import React from 'react'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../firebase'
+export default function Login(){ const [email,setEmail]=React.useState(''); const [password,setPassword]=React.useState(''); const [error,setError]=React.useState(''); const handle=async e=>{ e.preventDefault(); setError(''); try{ await signInWithEmailAndPassword(auth,email,password) }catch(err){ setError(err.message) } } return (<div className="screen-center"><form className="section" style={{width:360}} onSubmit={handle}><h3>Painel Admin</h3><label>Email</label><input className="tag" value={email} onChange={e=>setEmail(e.target.value)}/><label>Senha</label><input type="password" className="tag" value={password} onChange={e=>setPassword(e.target.value)}/>{error&&<div style={{color:'red'}}>{error}</div>}<div style={{marginTop:10}}><button className="btn">Entrar</button></div></form></div>)}
