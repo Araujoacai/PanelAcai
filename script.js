@@ -137,6 +137,3 @@
                         <span class="font-semibold text-purple-800">${produto.name}</span>
                         ${produto.category === "tamanho" ? `<span class="text-green-600 font-bold">R$${(produto.price || 0).toFixed(2).replace(".", ",")}<
 (Content truncated due to size limit. Use page ranges or line ranges to read remaining content)
-
-
-
