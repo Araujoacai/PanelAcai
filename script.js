@@ -888,20 +888,23 @@ function generatePixPayload(key, name, city, amountStr, txid) {
     const amount = parseFloat(amountStr.replace("R$", "").replace(",", ".")).toFixed(2);
     const normalizedName = normalizeText(name).toUpperCase();
     const normalizedCity = normalizeText(city).toUpperCase();
-    const cleanTxid = (txid || '***').replace(/[^a-zA-Z0-9]/g, '');
+    
+    // O txid para um PIX estático com valor definido deve ser '***'
+    const cleanTxid = '***';
 
     const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', key);
     
     let payload = [
-        formatField('00', '01'),
-        formatField('26', merchantAccountInfo),
-        formatField('52', '0000'),
-        formatField('53', '986'),
-        formatField('54', amount),
-        formatField('58', 'BR'),
-        formatField('59', normalizedName),
-        formatField('60', normalizedCity),
-        formatField('62', formatField('05', cleanTxid))
+        formatField('00', '01'), // Indicador de Formato do Payload
+        formatField('01', '11'), // Ponto de Iniciação: 11 para QR code estático
+        formatField('26', merchantAccountInfo), // Informação da Conta do Comerciante
+        formatField('52', '0000'), // Código da Categoria do Comerciante
+        formatField('53', '986'), // Moeda da Transação (BRL)
+        formatField('54', amount), // Valor da Transação
+        formatField('58', 'BR'), // Código do País
+        formatField('59', normalizedName), // Nome do Comerciante
+        formatField('60', normalizedCity), // Cidade do Comerciante
+        formatField('62', formatField('05', cleanTxid)) // Campo de Dados Adicionais com txid
     ].join('');
 
     const payloadWithCrcTag = payload + '6304';
@@ -978,3 +981,4 @@ onSnapshot(collection(db, "combos"), (snapshot) => {
         combosSectionEl.classList.add('hidden');
     }
 });
+
