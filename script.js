@@ -34,7 +34,7 @@
     const sendOrderBtnMobile = document.getElementById("send-order-button-mobile");
     const sendOrderBtnDesktop = document.getElementById("send-order-button-desktop");
 
-    function showModal(content, onOpen = () => {}) {
+    window.showModal = function(content, onOpen = () => {}) {
         let modalContent = content;
         if (typeof content === "string") {
             modalContent = `<p class="text-lg text-gray-800 mb-6">${content}</p><button onclick="window.closeModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-8 rounded-lg transition-colors">OK</button>`;
@@ -44,7 +44,7 @@
         setTimeout(() => { document.getElementById("modal-box").classList.remove("scale-95", "opacity-0"); onOpen(); }, 10);
     }
 
-    function closeModal() {
+    window.closeModal = function() {
         const modalBox = document.getElementById("modal-box");
         if (modalBox) {
             modalBox.classList.add("scale-95", "opacity-0");
@@ -100,8 +100,6 @@
         }
     });
 
-    window.closeModal = closeModal; // Torna a função acessível globalmente para o onclick no HTML do modal
-
     function showToast(message, type = "info") {
         const toastContainer = document.getElementById("toast-container");
         const toast = document.createElement("div");
@@ -139,4 +137,6 @@
                         <span class="font-semibold text-purple-800">${produto.name}</span>
                         ${produto.category === "tamanho" ? `<span class="text-green-600 font-bold">R$${(produto.price || 0).toFixed(2).replace(".", ",")}<
 (Content truncated due to size limit. Use page ranges or line ranges to read remaining content)
+
+
 
