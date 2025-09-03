@@ -809,6 +809,3 @@
     onSnapshot(collection(db, "combos"), (snapshot) => {
         combos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderCombosMenu();
     }, (error) => { console.error("Erro ao carregar combos:", error); document.getElementById('combos-section').classList.add('hidden'); });
-  </script>
-</body>
-</html>
