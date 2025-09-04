@@ -61,7 +61,6 @@ body {
 .modern-button:hover {
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
 
 /* Estilos de rádio e checkbox personalizados */
 .radio-label, .checkbox-label {
