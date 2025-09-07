@@ -1,123 +1,39 @@
 body { 
   scroll-behavior: smooth; 
   font-family: 'Poppins', sans-serif;
-  color: #333; /* Darker base text color */
 }
-.font-montserrat {
-  font-family: 'Montserrat', sans-serif;
-}
-
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Estilos de rádio e checkbox personalizados */
 .radio-label, .checkbox-label {
     transition: all 0.2s ease-in-out;
-    border-color: #d1d5db; /* gray-300 */
-    color: #4b5563; /* gray-700 */
-    font-size: 0.95rem; /* Slightly larger text */
 }
-.radio-label:hover, .checkbox-label:hover {
-    background-color: #f3f4f6; /* gray-100 */
-}
-
 input:checked + .radio-label, input:checked + .checkbox-label {
     border-color: #a855f7; /* purple-500 */
     background-color: #f5f3ff; /* violet-100 */
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(168, 85, 247, 0.25); /* Stronger shadow */
-    color: #6b21a8; /* purple-800 */
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.2);
 }
-
-/* Specific style for accompaniment items when checked to create space for quantity input */
-.acompanhamento-check:checked + .checkbox-label {
-    padding-right: 5.5rem; /* Adjusted for quantity input */
-}
-
-.tab-btn {
-    transition: all 0.2s ease-in-out;
-    border-bottom-width: 2px;
-    border-color: transparent;
-    color: #6b7280; /* gray-500 */
-}
-
-.tab-btn:hover {
-    color: #8b5cf6; /* purple-500 */
-    border-color: #d8b4fe; /* purple-300 */
-}
-
 .tab-active { 
     border-color: #9333ea; /* purple-700 */
     background-color: #faf5ff; /* purple-50 */
     color: #9333ea; /* purple-700 */
-    font-weight: 600;
 }
-
 @keyframes slide-down {
-    from { transform: translateY(-100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { top: -100px; opacity: 0; }
+    to { top: 20px; opacity: 1; }
 }
-
 .toast-notification {
     animation: slide-down 0.5s ease-out forwards;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    background-color: #34d399; /* green-400 */
-    color: white;
-    font-weight: 600;
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
 }
-
 #qrcode {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 #qrcode img {
-    border: 8px solid white;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-}
-
-/* Modal styles for better animation */
-#modal-container.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-#modal-container #modal-box {
-    transform: scale(0.95);
-    opacity: 0;
-    transition: all 0.3s ease-out;
-}
-#modal-container:not(.hidden) #modal-box {
-    transform: scale(1);
-    opacity: 1;
-}
-
-/* WhatsApp Bar Animation */
-#whatsapp-bar.hidden {
-    transform: translateY(100%);
-}
-#whatsapp-bar:not(.hidden) {
-    transform: translateY(0);
-}
-
-/* Custom scrollbar for admin tabs */
-.admin-tabs-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
-}
-
-.admin-tabs-scroll::-webkit-scrollbar {
-    height: 6px;
-}
-
-.admin-tabs-scroll::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.admin-tabs-scroll::-webkit-scrollbar-thumb {
-    background: #d8b4fe; /* purple-300 */
-    border-radius: 10px;
+    border: 6px solid white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }

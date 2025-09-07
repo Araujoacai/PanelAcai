@@ -1,182 +1,160 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cardápio Açaí Araujo - Modern</title>
+  <title>Cardápio Açaí Araujo</title>
   <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='currentColor' stroke-width='2'%3e%3cpath d='M4 12 C4 22, 28 22, 28 12' stroke='%236b21a8' fill='%23e9d5ff'/%3e%3cpath d='M6 12 Q16 4, 26 12' stroke='%236b21a8' fill='%23a855f7'/%3e%3ccircle cx='12' cy='10' r='2' fill='%23fef9c3'/%3e%3ccircle cx='20' cy='10' r='2' fill='%23dcfce7'/%3e%3c/svg%3e">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen flex flex-col items-center bg-gray-50 text-gray-800 bg-gradient-to-br from-purple-100 via-pink-50 to-white font-poppins">
+<body class="min-h-screen flex flex-col items-center bg-gray-50 text-gray-800 p-4 bg-gradient-to-br from-purple-100 via-pink-50 to-white">
 
-  <!-- Loading Spinner -->
-  <div id="loading-spinner" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500"></div>
+  <!-- Botão Admin Flutuante (para alternar para a visão de admin) -->
+  <div class="fixed bottom-24 right-4 z-40 flex flex-col gap-3">
+    <a href="admin.html" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 hover:scale-110 transition-all duration-200">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
+    </a>
   </div>
+  
+  <!-- Container de Notificações Toast -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50"></div>
 
-  <!-- Header Section -->
-  <header class="w-full bg-purple-700 text-white py-4 shadow-lg sticky top-0 z-30">
-    <div class="container mx-auto flex justify-between items-center px-4 max-w-7xl">
-      <h1 class="text-2xl font-bold font-montserrat tracking-wide">Açaí Araujo</h1>
-      <nav>
-        <button id="admin-login-button" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
-          Admin
-        </button>
-        <button id="admin-logout-button" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hidden flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/><path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
-          Sair
-        </button>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Main Content Area -->
-  <main class="flex-grow w-full max-w-7xl mx-auto p-4 py-8 lg:py-12">
-
-    <!-- Cardápio Principal -->
-    <section id="menu-container" class="bg-white/80 backdrop-blur-xl border border-purple-200/80 shadow-2xl rounded-3xl p-6 lg:p-10 w-full mb-24 lg:mb-4 transform transition-all duration-300">
-      
-      <!-- Banner -->
-      <img src="Logoacai.png" alt="Banner Açaí Araujo" class="rounded-2xl shadow-md mb-8 w-full max-h-48 object-cover object-center" onerror="this.style.display='none'">
-
-      <div class="text-center mb-10">
-          <h2 class="text-4xl lg:text-5xl font-extrabold mb-3 text-purple-800 font-montserrat">Nosso Cardápio</h2>
-          <p class="font-bold text-pink-600 tracking-wider text-lg">DELICIOSOS ACOMPANHAMENTOS</p>
-          <p id="acompanhamentos-rules" class="text-purple-600 text-sm mt-1">3 porções por copo | Adicional R$3 por porção extra</p>
-      </div>
-      
-      <div id="loja-fechada-aviso" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6 animate-pulse" role="alert">
-          <p class="font-bold text-lg">Ops! Estamos fechados.</p>
-          <p id="mensagem-loja-fechada" class="text-base"></p>
-      </div>
-
-      <!-- Seção de Combos -->
-      <div id="combos-section" class="mb-10 hidden">
-          <h3 class="text-2xl font-bold text-center text-purple-800 mb-6 flex items-center justify-center gap-3">
-            <span class="text-orange-500 text-3xl">🔥</span> Combos Imperdíveis <span class="text-orange-500 text-3xl">🔥</span>
-          </h3>
-          <div id="combos-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Combos serão inseridos aqui -->
-          </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
-          <!-- Coluna Esquerda: Pedido -->
-          <div class="space-y-8">
-              <div>
-                  <h3 class="text-2xl font-semibold text-purple-700 mb-4 flex items-center gap-2">🥤 Tamanho <span class="text-red-500">*</span></h3>
-                  <div id="tamanhos-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      <p class="text-gray-500 col-span-full animate-pulse">A carregar tamanhos...</p>
-                  </div>
-              </div>
-              <div>
-                  <label for="quantidade" class="text-2xl font-semibold text-purple-700 mb-4 block">📦 Quantidade <span class="text-red-500">*</span></label>
-                  <input type="number" id="quantidade" min="1" value="1" class="w-32 p-3 bg-white border-2 border-purple-300 rounded-xl text-center text-lg focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
-              </div>
-              <div>
-                  <label for="nome-cliente" class="text-2xl font-semibold text-purple-700 mb-4 block">👤 Seu Nome <span class="text-red-500">*</span></label>
-                  <input type="text" id="nome-cliente" placeholder="Digite seu nome para o pedido" class="w-full p-4 bg-white border-2 border-purple-300 rounded-xl text-lg focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
-              </div>
-              <div>
-                  <label for="telefone-cliente" class="text-2xl font-semibold text-purple-700 mb-4 block">📞 Telefone/WhatsApp <span class="text-red-500">*</span></label>
-                  <input type="tel" id="telefone-cliente" placeholder="Seu número para contato (Ex: 5511999998888)" class="w-full p-4 bg-white border-2 border-purple-300 rounded-xl text-lg focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
-              </div>
-              <div>
-                  <label for="observacoes" class="text-2xl font-semibold text-purple-700 mb-4 block">📝 Observações</label>
-                  <textarea id="observacoes" rows="4" placeholder="Ex: pouco leite condensado, sem granola..." class="w-full p-4 bg-white border-2 border-purple-300 rounded-xl text-lg focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md"></textarea>
-              </div>
-              <div>
-                  <h3 class="text-2xl font-semibold text-purple-700 mb-4 block">💳 Forma de Pagamento <span class="text-red-500">*</span></h3>
-                  <div id="payment-method-container" class="grid grid-cols-3 gap-4">
-                      <div>
-                          <input type="radio" name="payment-method" value="Dinheiro" id="payment-dinheiro" class="hidden" checked>
-                          <label for="payment-dinheiro" class="radio-label block cursor-pointer p-4 border-2 border-gray-300 rounded-xl text-center bg-gray-50 hover:bg-gray-100 transition-all duration-200 shadow-sm">
-                              <span class="font-semibold block text-base sm:text-lg">Dinheiro</span>
-                          </label>
-                      </div>
-                      <div>
-                          <input type="radio" name="payment-method" value="PIX" id="payment-pix" class="hidden">
-                          <label for="payment-pix" class="radio-label block cursor-pointer p-4 border-2 border-gray-300 rounded-xl text-center bg-gray-50 hover:bg-gray-100 transition-all duration-200 shadow-sm">
-                              <span class="font-semibold block text-base sm:text-lg">PIX</span>
-                          </label>
-                      </div>
-                      <div>
-                          <input type="radio" name="payment-method" value="Cartão" id="payment-cartao" class="hidden">
-                          <label for="payment-cartao" class="radio-label block cursor-pointer p-4 border-2 border-gray-300 rounded-xl text-center bg-gray-50 hover:bg-gray-100 transition-all duration-200 shadow-sm">
-                              <span class="font-semibold block text-base sm:text-lg">Cartão</span>
-                          </label>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          
-          <!-- Coluna Direita: Acompanhamentos -->
-          <div class="lg:sticky lg:top-28 self-start">
-              <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 mt-8 lg:mt-0 shadow-inner">
-                  <label class="flex items-center cursor-pointer p-2">
-                      <input type="checkbox" id="apenas-acai-check" class="w-6 h-6 accent-purple-600 flex-shrink-0 mr-3">
-                      <span class="font-bold text-purple-800 text-lg">Apenas Açaí (sem acompanhamentos)</span>
-                  </label>
-              </div>
-              
-              <div class="space-y-8 mt-8">
-                  <div>
-                      <h3 class="text-2xl font-semibold text-pink-600 mb-4 flex items-center gap-2">🥭 Frutas</h3>
-                      <div id="frutas-container" class="grid grid-cols-2 gap-4">
-                          <p class="text-gray-500 col-span-2 animate-pulse">A carregar frutas...</p>
-                      </div>
-                  </div>
-                  <div>
-                      <h3 class="text-2xl font-semibold text-cyan-600 mb-4 flex items-center gap-2">🍫 Cremes</h3>
-                      <div id="cremes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <p class="text-gray-500 col-span-2 animate-pulse">A carregar cremes...</p>
-                      </div>
-                  </div>
-                  <div>
-                      <h3 class="text-2xl font-semibold text-purple-600 mb-4 flex items-center gap-2">✨ Outros</h3>
-                      <div id="outros-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <p class="text-gray-500 col-span-2 animate-pulse">A carregar outros itens...</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-      
-       <!-- Barra de Ação para Desktop -->
-      <div id="desktop-action-bar" class="hidden lg:flex items-center justify-end mt-12 pt-8 border-t border-purple-200">
-          <h2 class="text-4xl font-extrabold mr-8 text-purple-800 font-montserrat">Total: <span id="valor-desktop" class="text-green-600">R$0,00</span></h2>
-          <button id="send-order-button-desktop" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl hover:scale-105 transform transition-all duration-300 text-xl flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
-            Enviar Pedido
-          </button>
-      </div>
-    </section>
+  <!-- Cardápio Principal -->
+  <div id="menu-container" class="bg-white/80 backdrop-blur-xl border border-purple-200/80 shadow-2xl rounded-3xl p-6 w-full max-w-md lg:max-w-4xl mb-24 lg:mb-4">
     
-    <!-- Painel Admin (escondido por padrão) -->
-    <section id="admin-panel" class="hidden w-full bg-white/80 backdrop-blur-xl border border-purple-200/80 shadow-2xl rounded-3xl p-6 lg:p-10 transform transition-all duration-300"></section>
+    <!-- Banner -->
+    <img src="Logoacai.png" alt="Banner Açaí Araujo" class="rounded-xl shadow-md mb-6 w-full h-auto" onerror="this.style.display='none'">
 
-  </main>
+    <div class="text-center mb-8">
+        <h1 class="text-4xl lg:text-5xl font-extrabold mb-3 text-purple-800">Cardápio Araujo</h1>
+        <p class="font-bold text-pink-600 tracking-wider">ACOMPANHAMENTOS</p>
+        <p id="acompanhamentos-rules" class="text-purple-600">3 porções por copo | Adicional R$3 por porção extra</p>
+    </div>
+    
+    <div id="loja-fechada-aviso" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6" role="alert">
+        <p class="font-bold">Loja Fechada</p>
+        <p id="mensagem-loja-fechada"></p>
+    </div>
 
+    <!-- Seção de Combos -->
+    <div id="combos-section" class="mb-8 hidden">
+        <h2 class="text-2xl font-bold text-center text-purple-800 mb-4">🔥 Combos Imperdíveis</h2>
+        <div id="combos-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Combos serão inseridos aqui -->
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+        <!-- Coluna Esquerda: Pedido -->
+        <div class="space-y-6">
+            <div>
+                <h2 class="text-xl font-semibold text-purple-700 mb-3">🥤 Tamanho</h2>
+                <div id="tamanhos-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <p class="text-gray-500 col-span-full">A carregar tamanhos...</p>
+                </div>
+            </div>
+            <div>
+                <label for="quantidade" class="text-xl font-semibold text-purple-700 mb-3 block">📦 Quantidade</label>
+                <input type="number" id="quantidade" min="1" value="1" class="w-28 p-3 bg-white border-2 border-purple-200 rounded-xl text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+            </div>
+             <div>
+                <label for="nome-cliente" class="text-xl font-semibold text-purple-700 mb-3 block">👤 Seu Nome</label>
+                <input type="text" id="nome-cliente" placeholder="Digite seu nome para o pedido" class="w-full p-3 bg-white border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+            </div>
+             <div>
+                <label for="telefone-cliente" class="text-xl font-semibold text-purple-700 mb-3 block">📞 Telefone/WhatsApp</label>
+                <input type="tel" id="telefone-cliente" placeholder="Seu número para contato" class="w-full p-3 bg-white border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+            </div>
+             <div>
+                <label for="observacoes" class="text-xl font-semibold text-purple-700 mb-3 block">📝 Observações</label>
+                <textarea id="observacoes" rows="3" placeholder="Ex: pouco leite condensado..." class="w-full p-3 bg-white border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"></textarea>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold text-purple-700 mb-3 block">💳 Forma de Pagamento</h2>
+                <div id="payment-method-container" class="grid grid-cols-3 gap-3">
+                    <div>
+                        <input type="radio" name="payment-method" value="Dinheiro" id="payment-dinheiro" class="hidden" checked>
+                        <label for="payment-dinheiro" class="radio-label block cursor-pointer p-3 border-2 border-gray-300 rounded-xl text-center bg-gray-50">
+                            <span class="font-semibold block text-sm sm:text-base">Dinheiro</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="payment-method" value="PIX" id="payment-pix" class="hidden">
+                        <label for="payment-pix" class="radio-label block cursor-pointer p-3 border-2 border-gray-300 rounded-xl text-center bg-gray-50">
+                            <span class="font-semibold block text-sm sm:text-base">PIX</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="payment-method" value="Cartão" id="payment-cartao" class="hidden">
+                        <label for="payment-cartao" class="radio-label block cursor-pointer p-3 border-2 border-gray-300 rounded-xl text-center bg-gray-50">
+                            <span class="font-semibold block text-sm sm:text-base">Cartão</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coluna Direita: Acompanhamentos -->
+        <div>
+            <div class="bg-purple-50 p-3 rounded-lg border border-purple-200 mt-6 lg:mt-0">
+                <label class="flex items-center cursor-pointer p-2">
+                    <input type="checkbox" id="apenas-acai-check" class="w-5 h-5 accent-purple-600 flex-shrink-0">
+                    <span class="ml-3 font-semibold text-purple-800">Apenas Açaí (sem acompanhamentos)</span>
+                </label>
+            </div>
+            
+            <div class="space-y-6 mt-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-pink-600 mb-2">🥭 Frutas</h3>
+                    <div id="frutas-container" class="grid grid-cols-2 gap-3">
+                        <p class="text-gray-500 col-span-2">A carregar frutas...</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-cyan-600 mb-2">🍫 Cremes</h3>
+                    <div id="cremes-container" class="grid grid-cols-1 gap-2">
+                        <p class="text-gray-500">A carregar cremes...</p>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="text-lg font-semibold text-purple-600 mb-2">✨ Outros</h2>
+                    <div id="outros-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <p class="text-gray-500 col-span-2">A carregar outros itens...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     <!-- Barra de Ação para Desktop -->
+    <div id="desktop-action-bar" class="hidden lg:flex items-center justify-end mt-8 pt-6 border-t border-purple-200">
+        <h2 class="text-3xl font-bold mr-6">💰 Total: <span id="valor-desktop" class="text-green-600">R$0,00</span></h2>
+        <button id="send-order-button-desktop" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 text-lg flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+          Enviar Pedido
+        </button>
+    </div>
+  </div>
+  
   <!-- Modal Genérico -->
-  <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4 transition-opacity duration-300 opacity-0">
+  <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
       <!-- Conteúdo do modal será inserido aqui -->
   </div>
 
   <!-- Barra fixa WhatsApp (Apenas Mobile) -->
-  <div id="whatsapp-bar" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-2xl p-4 flex items-center justify-between max-w-md mx-auto rounded-t-3xl border-t-2 border-purple-300 lg:hidden z-40 transform translate-y-full transition-transform duration-300">
-    <h3 class="text-2xl font-bold text-purple-800 font-montserrat">Total: <span id="valor-mobile" class="text-green-600">R$0,00</span></h3>
-    <button id="send-order-button-mobile" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 text-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
-      <span>Fazer Pedido</span>
+  <div id="whatsapp-bar" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-2xl p-4 flex items-center justify-between max-w-md mx-auto rounded-t-3xl border-t border-purple-200 lg:hidden">
+    <h2 class="text-xl font-bold">Total: <span id="valor-mobile" class="text-green-600">R$0,00</span></h2>
+    <button id="send-order-button-mobile" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2 px-5 rounded-xl shadow-lg transition flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+      <span>WhatsApp</span>
     </button>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script type="module" src="client.js"></script>
 </body>
 </html>
